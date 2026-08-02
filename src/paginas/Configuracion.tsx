@@ -1,23 +1,46 @@
 import { useState } from 'react';
+import { enviarEvento } from '../api/planilla';
 import type { Credenciales } from '../api/planilla';
 import { usarCredenciales } from '../hooks/usarCredenciales';
 import './Configuracion.css';
+
+type EstadoPrueba =
+  | { fase: 'inactivo' }
+  | { fase: 'probando' }
+  | { fase: 'listo'; ok: boolean; mensaje: string };
 
 export function Configuracion() {
   const { credenciales, guardar, estanCompletas } = usarCredenciales();
   const [formulario, setFormulario] = useState<Credenciales>(credenciales);
   const [guardado, setGuardado] = useState(false);
+  const [prueba, setPrueba] = useState<EstadoPrueba>({ fase: 'inactivo' });
 
   const completo = formulario.url.trim() !== '' && formulario.token.trim() !== '';
 
   function actualizar(campo: keyof Credenciales, valor: string) {
     setFormulario((previo) => ({ ...previo, [campo]: valor }));
     setGuardado(false);
+    setPrueba({ fase: 'inactivo' });
   }
 
   function alGuardar() {
     guardar({ url: formulario.url.trim(), token: formulario.token.trim() });
     setGuardado(true);
+  }
+
+  async function alProbar() {
+    setPrueba({ fase: 'probando' });
+
+    const respuesta = await enviarEvento(
+      { url: formulario.url.trim(), token: formulario.token.trim() },
+      'PING',
+    );
+
+    setPrueba({
+      fase: 'listo',
+      ok: respuesta.estado === 'ok',
+      mensaje: respuesta.mensaje,
+    });
   }
 
   return (
@@ -64,9 +87,24 @@ export function Configuracion() {
           >
             Guardar
           </button>
+          <button
+            type="button"
+            className="boton boton--secundario"
+            disabled={!completo || prueba.fase === 'probando'}
+            onClick={alProbar}
+          >
+            {prueba.fase === 'probando' ? 'Probando…' : 'Probar conexión'}
+          </button>
         </div>
 
         {guardado && <p className="aviso aviso--ok">Guardado en este celular.</p>}
+
+        {prueba.fase === 'listo' && (
+          <p className={prueba.ok ? 'aviso aviso--ok' : 'aviso aviso--error'}>
+            {prueba.ok ? '✓ ' : '✕ '}
+            {prueba.mensaje}
+          </p>
+        )}
 
         {!estanCompletas && !guardado && (
           <p className="aviso aviso--neutro">
