@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+.vscode/
+
+# Material de trabajo interno: no se publica
+CLAUDE.md
+.claude/
+Documentacion/
