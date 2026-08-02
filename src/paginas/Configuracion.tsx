@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { enviarEvento } from '../api/planilla';
 import type { Credenciales } from '../api/planilla';
 import { usarCredenciales } from '../hooks/usarCredenciales';
+import { usarTokenSugerido } from '../hooks/usarTokenSugerido';
+import { GuiaDeConexion } from '../componentes/GuiaDeConexion';
 import './Configuracion.css';
 
 type EstadoPrueba =
@@ -11,6 +13,7 @@ type EstadoPrueba =
 
 export function Configuracion() {
   const { credenciales, guardar, estanCompletas } = usarCredenciales();
+  const { token: tokenSugerido, regenerar: regenerarToken } = usarTokenSugerido();
   const [formulario, setFormulario] = useState<Credenciales>(credenciales);
   const [guardado, setGuardado] = useState(false);
   const [prueba, setPrueba] = useState<EstadoPrueba>({ fase: 'inactivo' });
@@ -47,8 +50,13 @@ export function Configuracion() {
     <div className="configuracion">
       <header className="configuracion__encabezado">
         <h1>Conectar con tu planilla</h1>
-        <p>Se hace una sola vez por planilla.</p>
+        <p>
+          Se hace una sola vez por planilla. Son cinco pasos y no hace falta saber
+          programar: solo copiar y pegar.
+        </p>
       </header>
+
+      <GuiaDeConexion tokenSugerido={tokenSugerido} alGenerarToken={regenerarToken} />
 
       <div className="configuracion__formulario">
         <label className="campo">
@@ -72,7 +80,7 @@ export function Configuracion() {
             autoCapitalize="off"
             autoCorrect="off"
             spellCheck={false}
-            placeholder="La que cargaste en Propiedades del script"
+            placeholder="La misma del paso 3"
             value={formulario.token}
             onChange={(evento) => actualizar('token', evento.target.value)}
           />
