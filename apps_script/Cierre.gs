@@ -124,3 +124,19 @@ function borrarBalanceDeCierre(idLista) {
     }
   }
 }
+
+/**
+ * La foto congelada de una lista cerrada.
+ *
+ * Las transferencias no se guardan: se derivan de estos netos, así que
+ * guardarlas sería tener el mismo dato escrito dos veces y poder contradecirse.
+ */
+function ejecutarObtenerBalanceCongelado(datos) {
+  const idLista = String(datos.idLista || '').trim();
+
+  return responder({
+    estado: 'ok',
+    mensaje: 'Balance de cierre.',
+    datos: { unidades: leerBalanceCierre(idLista) },
+  });
+}

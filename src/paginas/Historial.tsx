@@ -111,7 +111,12 @@ export function Historial({
         {errorDeEstado !== '' && <p className="aviso aviso--error">✕ {errorDeEstado}</p>}
 
         {!cargando && error === '' && (
-          <BalanceDeLista lista={lista} gastos={gastos} personas={personas} />
+          <BalanceDeLista
+            credenciales={credenciales}
+            lista={lista}
+            gastos={gastos}
+            personas={personas}
+          />
         )}
 
         {!cargando && error === '' && gastos.length > 0 && (

@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
 import type { Gasto } from '../api/gastos';
+import { obtenerBalanceCongelado } from '../api/listas';
 import type { Lista } from '../api/listas';
+import type { Credenciales } from '../api/planilla';
 import type { Persona } from '../api/personas';
 import { calcularBalance } from '../utiles/balance';
 import { calcularTransferencias } from '../utiles/transferencias';
@@ -7,6 +10,7 @@ import { formatearNumero } from '../utiles/monto';
 import './BalanceDeLista.css';
 
 interface Props {
+  credenciales: Credenciales;
   lista: Lista;
   gastos: Gasto[];
   personas: Persona[];
@@ -24,9 +28,33 @@ function claseDelNeto(valor: number) {
   return 'balance__monto';
 }
 
-export function BalanceDeLista({ lista, gastos, personas }: Props) {
-  const balance = calcularBalance(lista.participantes, gastos);
-  const transferencias = calcularTransferencias(balance.unidades);
+export function BalanceDeLista({ credenciales, lista, gastos, personas }: Props) {
+  const cerrada = lista.estado === 'Cerrada';
+  const [congelado, setCongelado] = useState<
+    { unidad: string; codigos: string[]; neto: number }[] | null
+  >(null);
+
+  useEffect(() => {
+    if (!cerrada) return;
+
+    let vigente = true;
+    void obtenerBalanceCongelado(credenciales, lista.id).then((resultado) => {
+      if (vigente && resultado.ok) setCongelado(resultado.datos ?? []);
+    });
+
+    // Si se cambia de lista mientras la respuesta viaja, la vieja llegaría
+    // tarde y pisaría el balance de la lista nueva.
+    return () => {
+      vigente = false;
+    };
+  }, [credenciales, lista.id, cerrada]);
+
+  const enVivo = calcularBalance(lista.participantes, gastos);
+
+  // En una lista cerrada manda la foto: ese número ya se usó para saldar, así
+  // que corregir un gasto viejo no lo tiene que mover.
+  const unidades = cerrada ? (congelado ?? []) : enVivo.unidades;
+  const transferencias = calcularTransferencias(unidades);
   const nombrePorCodigo = new Map(personas.map((una) => [una.codigo, una.nombre]));
 
   /** "Ana + Juan" para una unidad compartida, o el nombre solo. */
@@ -36,9 +64,7 @@ export function BalanceDeLista({ lista, gastos, personas }: Props) {
       .join(' + ');
   }
 
-  const codigosPorUnidad = new Map(
-    balance.unidades.map((una) => [una.unidad, una.codigos]),
-  );
+  const codigosPorUnidad = new Map(unidades.map((una) => [una.unidad, una.codigos]));
 
   function nombrePorUnidad(unidad: string) {
     return nombreDeLaUnidad(codigosPorUnidad.get(unidad) ?? [unidad]);
@@ -48,19 +74,20 @@ export function BalanceDeLista({ lista, gastos, personas }: Props) {
     <section className="balance">
       <div className="balance__fila balance__fila--total">
         <span>Gastos totales</span>
-        <span className="balance__monto numero">{formatearNumero(balance.total)}</span>
+        <span className="balance__monto numero">{formatearNumero(enVivo.total)}</span>
       </div>
 
-      {balance.unidades.map((unidad) => (
-        <div key={unidad.unidad} className="balance__fila">
-          <span>{nombreDeLaUnidad(unidad.codigos)} puso</span>
-          <span className="balance__monto numero">{formatearNumero(unidad.aporte)}</span>
-        </div>
-      ))}
+      {!cerrada &&
+        enVivo.unidades.map((unidad) => (
+          <div key={unidad.unidad} className="balance__fila">
+            <span>{nombreDeLaUnidad(unidad.codigos)} puso</span>
+            <span className="balance__monto numero">{formatearNumero(unidad.aporte)}</span>
+          </div>
+        ))}
 
-      <div className="balance__rotulo">Neto</div>
+      <div className="balance__rotulo">{cerrada ? 'Neto al cerrar' : 'Neto'}</div>
 
-      {balance.unidades.map((unidad) => (
+      {unidades.map((unidad) => (
         <div key={unidad.unidad} className="balance__fila">
           <span>{nombreDeLaUnidad(unidad.codigos)}</span>
           <span className={`${claseDelNeto(unidad.neto)} numero`}>
