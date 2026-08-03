@@ -58,6 +58,16 @@ la planilla**, una fila por persona:
   empieza con cero no pierda ese cero.
 - `Admin` es `SI` o `NO`.
 
+### Conceptos nuevos
+
+Cuando alguien carga un gasto con **Otro**, el concepto se crea solo en la hoja
+`Conceptos`, con el ícono 🧾 y sin categoría. En la app le aparece un **punto
+rojo al administrador y a nadie más**, para avisarle que hay algo por completar.
+
+En la planilla se le pone el emoji que corresponde y sus columnas `Categoria` y
+`Subcategoria`; con eso el punto desaparece. Si dos personas cargan el mismo
+nombre, se reutiliza el concepto que ya existe en vez de duplicarlo.
+
 ### Sacar un celular
 
 Al poner el PIN, la planilla emite un token y lo guarda en la hoja `Sesiones`,
