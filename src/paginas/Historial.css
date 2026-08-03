@@ -107,6 +107,26 @@
   flex-shrink: 0;
 }
 
+.gasto__importes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+/* El original tachado queda arriba y chico: lo que importa es lo que se paga,
+   pero sin el de antes no se entiende que hubo un descuento. */
+.gasto__original {
+  font-size: 11px;
+  color: var(--texto-muy-atenuado);
+  text-decoration: line-through;
+}
+
+.gasto__etiqueta {
+  margin-right: 5px;
+  font-size: 11px;
+}
+
 .gasto__accion {
   width: 32px;
   height: 32px;
