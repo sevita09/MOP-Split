@@ -60,3 +60,58 @@ function leerListaPersonas() {
       };
     });
 }
+
+/**
+ * Las listas donde participa una persona, separadas por estado.
+ *
+ * Se devuelven los participantes de cada lista junto con la lista misma: la app
+ * los necesita para mostrar quién está, y traerlos acá evita un segundo pedido
+ * por cada lista.
+ */
+function ejecutarObtenerListas(datos) {
+  const codigo = String(datos.usuario || '').trim();
+  const participaciones = leerListaPersonas();
+
+  const mias = participaciones
+    .filter(function (participacion) {
+      return participacion.codigoPersona === codigo;
+    })
+    .map(function (participacion) {
+      return participacion.idLista;
+    });
+
+  const listas = leerListas()
+    .filter(function (lista) {
+      return mias.indexOf(lista.id) !== -1;
+    })
+    .map(function (lista) {
+      return {
+        id: lista.id,
+        nombre: lista.nombre,
+        mes: lista.mes,
+        anio: lista.anio,
+        estado: lista.estado,
+        esDueño: lista.dueño === codigo,
+        participantes: participaciones
+          .filter(function (participacion) {
+            return participacion.idLista === lista.id;
+          })
+          .map(function (participacion) {
+            return { codigo: participacion.codigoPersona, unidad: participacion.unidad };
+          }),
+      };
+    });
+
+  return responder({
+    estado: 'ok',
+    mensaje: listas.length + ' lista(s).',
+    datos: {
+      abiertas: listas.filter(function (lista) {
+        return lista.estado === ESTADO_ABIERTA;
+      }),
+      cerradas: listas.filter(function (lista) {
+        return lista.estado === ESTADO_CERRADA;
+      }),
+    },
+  });
+}
