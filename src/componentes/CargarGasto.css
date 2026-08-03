@@ -1,0 +1,69 @@
+.cargar-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+
+.cargar {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--superficie);
+  border-top: 1px solid var(--borde);
+  border-radius: 22px 22px 0 0;
+  padding: 18px 18px 24px;
+  /* En el celular instalado, la franja del gesto de inicio se come el botón. */
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  max-height: 94dvh;
+  overflow-y: auto;
+}
+
+.cargar__encabezado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cargar__emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.cargar__nombre {
+  flex: 1;
+  font-family: var(--tipografia-titulos);
+  font-size: 17px;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cargar__cerrar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  border: 1px solid var(--borde);
+  background: var(--superficie-elevada);
+  color: var(--texto-secundario);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cargar__cerrar:hover {
+  border-color: var(--borde-hover);
+}
+
+.cargar__monto {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--texto);
+}
