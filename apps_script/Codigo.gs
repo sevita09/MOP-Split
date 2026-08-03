@@ -55,7 +55,9 @@ function doPost(e) {
       case 'CERRAR_SESION':
         return ejecutarCerrarSesion(datos);
       case 'OBTENER_CONCEPTOS':
-        return exigirSesion(persona, ejecutarObtenerConceptos);
+        return exigirSesion(persona, function () {
+          return ejecutarObtenerConceptos(datos);
+        });
       case 'OBTENER_LISTAS':
         return exigirSesion(persona, ejecutarObtenerListas);
       case 'CREAR_LISTA':

@@ -15,6 +15,10 @@ export interface Concepto {
   emoji: string;
   fijo: boolean;
   sinCategorizar: boolean;
+  /** Veces que se usó, contando todas las listas. */
+  usos: number;
+  /** Cuándo se usó por última vez en la lista abierta, o `null` si nunca. */
+  ultimoUsoEnLista: number | null;
 }
 
 function esConcepto(valor: unknown): valor is Concepto {
@@ -46,13 +50,18 @@ export async function crearConcepto(
     return { ok: false, mensaje: 'La planilla respondió sin el concepto.', datos: null };
   }
 
-  return { ok: true, mensaje: respuesta.mensaje, datos: contenido.concepto };
+  return {
+    ok: true,
+    mensaje: respuesta.mensaje,
+    datos: { ...contenido.concepto, usos: 0, ultimoUsoEnLista: null },
+  };
 }
 
 export async function obtenerConceptos(
   credenciales: Credenciales,
+  idLista: string,
 ): Promise<Resultado<Concepto[]>> {
-  const respuesta = await enviarEvento(credenciales, 'OBTENER_CONCEPTOS');
+  const respuesta = await enviarEvento(credenciales, 'OBTENER_CONCEPTOS', { idLista });
 
   if (respuesta.estado !== 'ok') {
     return { ok: false, mensaje: respuesta.mensaje, datos: null };

@@ -145,7 +145,30 @@ function ejecutarCrearConcepto(datos) {
   });
 }
 
-function ejecutarObtenerConceptos() {
+/**
+ * El catálogo, con lo que hace falta para ordenarlo.
+ *
+ * `usos` cuenta en todas las listas y `ultimoUsoEnLista` mira solo la lista
+ * abierta en el celular. El orden en sí lo arma la app: es la parte con lógica
+ * y allá está cubierta por tests, acá no.
+ */
+function ejecutarObtenerConceptos(datos) {
+  const idLista = String(datos.idLista || '').trim();
+
+  const usos = {};
+  const ultimoUsoEnLista = {};
+
+  leerGastos().forEach(function (gasto) {
+    usos[gasto.idConcepto] = (usos[gasto.idConcepto] || 0) + 1;
+
+    if (idLista === '' || gasto.idLista !== idLista) return;
+
+    const momento = gasto.fecha instanceof Date ? gasto.fecha.getTime() : 0;
+    if (!ultimoUsoEnLista[gasto.idConcepto] || momento > ultimoUsoEnLista[gasto.idConcepto]) {
+      ultimoUsoEnLista[gasto.idConcepto] = momento;
+    }
+  });
+
   const conceptos = leerConceptos().map(function (concepto) {
     return {
       id: concepto.id,
@@ -154,6 +177,8 @@ function ejecutarObtenerConceptos() {
       fijo: concepto.fijo,
       // Ni `Categoria` ni `Subcategoria` salen de la planilla: solo si faltan.
       sinCategorizar: concepto.categoria === '' || concepto.subcategoria === '',
+      usos: usos[concepto.id] || 0,
+      ultimoUsoEnLista: ultimoUsoEnLista[concepto.id] || null,
     };
   });
 
