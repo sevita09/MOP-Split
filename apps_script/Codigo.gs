@@ -41,6 +41,8 @@ function doPost(e) {
     switch (datos.accion) {
       case 'PING':
         return ejecutarPing(datos);
+      case 'OBTENER_PERSONAS':
+        return ejecutarObtenerPersonas();
       default:
         return responder({
           estado: 'error',
