@@ -9,10 +9,17 @@ interface Props {
   alGenerarToken: () => void;
 }
 
-export function GuiaDeConexion({ tokenSugerido, alGenerarToken }: Props) {
-  const [copiado, setCopiado] = useState<'codigo' | 'token' | null>(null);
+// Sin esta línea, Apps Script pide permiso sobre todas las hojas de cálculo de
+// la cuenta. Con ella, solo sobre la planilla donde está pegado el script.
+const LINEA_PERMISO =
+  '"oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"]';
 
-  async function copiar(texto: string, cual: 'codigo' | 'token') {
+type Copiable = 'codigo' | 'permiso' | 'token';
+
+export function GuiaDeConexion({ tokenSugerido, alGenerarToken }: Props) {
+  const [copiado, setCopiado] = useState<Copiable | null>(null);
+
+  async function copiar(texto: string, cual: Copiable) {
     await navigator.clipboard.writeText(texto);
     setCopiado(cual);
     setTimeout(() => setCopiado(null), 2000);
@@ -37,6 +44,27 @@ export function GuiaDeConexion({ tokenSugerido, alGenerarToken }: Props) {
         <button type="button" className="boton boton--secundario" onClick={() => copiar(codigoDelBackend, 'codigo')}>
           {copiado === 'codigo' ? '✓ Copiado' : 'Copiar código'}
         </button>
+      </li>
+
+      <li className="guia__paso">
+        <h2>Achicá el permiso que pide Google</h2>
+        <p>
+          En el engranaje <b>Configuración del proyecto</b>, tildá{' '}
+          <b>Mostrar el archivo de manifiesto appsscript.json</b>. Volvé al editor, abrí
+          ese archivo y agregá esta línea antes de la llave final, poniéndole una coma a
+          la línea de arriba.
+        </p>
+        <button
+          type="button"
+          className="boton boton--secundario"
+          onClick={() => copiar(LINEA_PERMISO, 'permiso')}
+        >
+          {copiado === 'permiso' ? '✓ Copiado' : 'Copiar la línea'}
+        </button>
+        <p className="guia__nota">
+          Sin esto Google pide permiso sobre <b>todas</b> tus hojas de cálculo. Con esto,
+          solo sobre esta planilla. Conviene igual que Split viva en una planilla propia.
+        </p>
       </li>
 
       <li className="guia__paso">

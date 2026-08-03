@@ -6,6 +6,13 @@
  * (Listas.gs, Gastos.gs…) y este queda solo con el ruteo y la validación.
  *
  * `doPost` y `ContentService` son de la API de Apps Script: van en inglés.
+ *
+ * El permiso que pide el script está acotado en `appsscript.json` al scope
+ * `spreadsheets.currentonly`: solo la planilla donde está pegado. Por defecto
+ * Apps Script pide acceso a *todas* las hojas de cálculo de la cuenta, que es
+ * muchísimo más de lo que este código necesita — acá nunca se abre otra
+ * planilla, siempre se trabaja sobre `getActiveSpreadsheet()`. El JSON no
+ * admite comentarios, así que la explicación vive acá.
  */
 
 /**

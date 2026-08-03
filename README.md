@@ -42,13 +42,20 @@ seguirla. El resumen, para tenerlo a mano:
 
 1. En la planilla de Google: **Extensiones → Apps Script**.
 2. Pegar el contenido de [`apps_script/Codigo.gs`](apps_script/Codigo.gs) y guardar.
-3. En **Configuración del proyecto → Propiedades del script**, agregar la
+3. En **Configuración del proyecto**, tildar *Mostrar el archivo de manifiesto
+   appsscript.json*, y agregarle la clave `oauthScopes` como está en
+   [`apps_script/appsscript.json`](apps_script/appsscript.json).
+4. En **Configuración del proyecto → Propiedades del script**, agregar la
    propiedad `TOKEN_SECRETO` con una clave inventada. No va en el código, así el
    archivo se puede versionar sin filtrar el secreto.
-4. **Implementar → Nueva implementación → Aplicación web**, ejecutando *como yo*
+5. **Implementar → Nueva implementación → Aplicación web**, ejecutando *como yo*
    y con acceso para *cualquier usuario*. Copiar la URL, que termina en `/exec`.
-5. En la app, pegar esa URL y la clave, **Guardar** y **Probar conexión**: tiene
+6. En la app, pegar esa URL y la clave, **Guardar** y **Probar conexión**: tiene
    que escribir una fila en la hoja `Ping`, que se crea sola.
+
+El paso 3 es de seguridad: sin él Apps Script pide permiso sobre **todas** las
+hojas de cálculo de la cuenta, cuando este código solo trabaja sobre la planilla
+donde está pegado. Conviene igual que Split viva en una planilla dedicada.
 
 > Cada vez que se cambia el `.gs` hay que crear una **nueva versión** de la
 > implementación. Editar el código no alcanza: la URL `/exec` sigue sirviendo el

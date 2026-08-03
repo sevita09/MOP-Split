@@ -51,7 +51,7 @@ export function Configuracion() {
       <header className="configuracion__encabezado">
         <h1>Conectar con tu planilla</h1>
         <p>
-          Se hace una sola vez por planilla. Son cinco pasos y no hace falta saber
+          Se hace una sola vez por planilla. Son seis pasos y no hace falta saber
           programar: solo copiar y pegar.
         </p>
       </header>
@@ -80,7 +80,7 @@ export function Configuracion() {
             autoCapitalize="off"
             autoCorrect="off"
             spellCheck={false}
-            placeholder="La misma del paso 3"
+            placeholder="La misma del paso 4"
             value={formulario.token}
             onChange={(evento) => actualizar('token', evento.target.value)}
           />
