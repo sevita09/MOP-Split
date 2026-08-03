@@ -65,6 +65,8 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
         lista={activa}
         conceptos={conceptos}
         personas={personas}
+        esAdmin={persona.admin}
+        alCambiarEstado={() => void recargarListas()}
         alVolver={() => setViendoGastos(false)}
       />
     );

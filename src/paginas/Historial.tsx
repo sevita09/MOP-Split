@@ -4,6 +4,7 @@ import type { Gasto } from '../api/gastos';
 import type { Lista } from '../api/listas';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
+import { cambiarEstadoDeLista } from '../api/listas';
 import { usarGastos } from '../hooks/usarGastos';
 import { BalanceDeLista } from '../componentes/BalanceDeLista';
 import { CorregirGasto } from '../componentes/CorregirGasto';
@@ -15,6 +16,8 @@ import './Historial.css';
 interface Props {
   credenciales: Credenciales;
   lista: Lista;
+  esAdmin: boolean;
+  alCambiarEstado: () => void;
   conceptos: Concepto[];
   personas: Persona[];
   alVolver: () => void;
@@ -22,11 +25,41 @@ interface Props {
 
 const FECHA_CORTA = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short' });
 
-export function Historial({ credenciales, lista, conceptos, personas, alVolver }: Props) {
+export function Historial({
+  credenciales,
+  lista,
+  conceptos,
+  personas,
+  esAdmin,
+  alCambiarEstado,
+  alVolver,
+}: Props) {
   const { gastos, cargando, error, recargar } = usarGastos(credenciales, lista.id);
   const [corrigiendo, setCorrigiendo] = useState<{ gasto: Gasto; que: Correccion } | null>(
     null,
   );
+  const [cambiandoEstado, setCambiandoEstado] = useState(false);
+  const [errorDeEstado, setErrorDeEstado] = useState('');
+
+  const cerrada = lista.estado === 'Cerrada';
+  // Esconder el botón es comodidad: la regla de verdad la aplica la planilla.
+  const puedeCambiarEstado = esAdmin || lista.esDueño;
+
+  async function alternarEstado() {
+    setCambiandoEstado(true);
+    setErrorDeEstado('');
+
+    const resultado = await cambiarEstadoDeLista(credenciales, lista.id, !cerrada);
+
+    setCambiandoEstado(false);
+
+    if (resultado.ok) {
+      alCambiarEstado();
+      return;
+    }
+
+    setErrorDeEstado(resultado.mensaje);
+  }
 
   const porConcepto = new Map(conceptos.map((uno) => [uno.id, uno]));
   const nombrePorPersona = new Map(personas.map((una) => [una.codigo, una.nombre]));
@@ -52,6 +85,7 @@ export function Historial({ credenciales, lista, conceptos, personas, alVolver }
           <h1>Balance</h1>
           <p className="historial__subtitulo">
             {lista.nombre} · {nombreDelPeriodo(lista.mes, lista.anio)}
+            {cerrada && ' · cerrada'}
           </p>
         </div>
       </header>
@@ -59,6 +93,22 @@ export function Historial({ credenciales, lista, conceptos, personas, alVolver }
       <div className="historial__cuerpo">
         {cargando && <p className="historial__nota">Cargando…</p>}
         {error !== '' && <p className="aviso aviso--error">✕ {error}</p>}
+
+        {puedeCambiarEstado && (
+          <div className="historial__estado">
+            <span>{cerrada ? 'El balance quedó congelado.' : 'Lista abierta.'}</span>
+            <button
+              type="button"
+              className="boton boton--secundario boton--chico"
+              disabled={cambiandoEstado}
+              onClick={() => void alternarEstado()}
+            >
+              {cambiandoEstado ? '…' : cerrada ? 'Reabrir lista' : 'Cerrar lista'}
+            </button>
+          </div>
+        )}
+
+        {errorDeEstado !== '' && <p className="aviso aviso--error">✕ {errorDeEstado}</p>}
 
         {!cargando && error === '' && (
           <BalanceDeLista lista={lista} gastos={gastos} personas={personas} />

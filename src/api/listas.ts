@@ -61,6 +61,20 @@ export async function crearLista(
   };
 }
 
+/** Cerrar congela el balance; reabrir borra esa foto. Lo decide la planilla. */
+export async function cambiarEstadoDeLista(
+  credenciales: Credenciales,
+  idLista: string,
+  cerrar: boolean,
+): Promise<Resultado<null>> {
+  const respuesta = await enviarEvento(credenciales, 'CAMBIAR_ESTADO_DE_LISTA', {
+    idLista,
+    cerrar,
+  });
+
+  return { ok: respuesta.estado === 'ok', mensaje: respuesta.mensaje, datos: null };
+}
+
 export async function obtenerListas(
   credenciales: Credenciales,
 ): Promise<Resultado<Listas>> {
