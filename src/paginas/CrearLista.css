@@ -1,0 +1,50 @@
+.crear-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 40px 20px 48px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.crear-lista__volver {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--enlace);
+  font-family: var(--tipografia-base);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.crear-lista__encabezado h1 {
+  font-family: var(--tipografia-titulos);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.crear-lista__periodo {
+  display: flex;
+  gap: 12px;
+}
+
+.crear-lista__periodo .campo {
+  flex: 1;
+}
+
+.crear-lista select {
+  background: var(--superficie-elevada);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 12px 13px;
+  color: var(--texto);
+  font-size: 15px;
+  font-family: var(--tipografia-base);
+}
+
+.crear-lista select:focus {
+  border-color: var(--acento-claro);
+}

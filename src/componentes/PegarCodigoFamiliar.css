@@ -46,10 +46,6 @@
   border-color: var(--acento-claro);
 }
 
-.boton--ancho {
-  width: 100%;
-}
-
 .pegar-codigo__enlace {
   background: none;
   border: none;

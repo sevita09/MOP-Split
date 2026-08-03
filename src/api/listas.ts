@@ -39,6 +39,28 @@ function comoListas(valor: unknown): Lista[] {
   return Array.isArray(valor) ? valor.filter(esLista) : [];
 }
 
+export interface ListaNueva {
+  nombre: string;
+  mes: number;
+  anio: number;
+  participantes: string[];
+  /** Cada grupo son los códigos que cuentan como una sola unidad de balance. */
+  grupos: string[][];
+}
+
+export async function crearLista(
+  credenciales: Credenciales,
+  lista: ListaNueva,
+): Promise<Resultado<null>> {
+  const respuesta = await enviarEvento(credenciales, 'CREAR_LISTA', { ...lista });
+
+  return {
+    ok: respuesta.estado === 'ok',
+    mensaje: respuesta.mensaje,
+    datos: null,
+  };
+}
+
 export async function obtenerListas(
   credenciales: Credenciales,
 ): Promise<Resultado<Listas>> {
