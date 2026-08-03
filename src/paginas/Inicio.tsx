@@ -91,7 +91,28 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
         {persona.admin && <span className="inicio__etiqueta">Admin</span>}
       </header>
 
-      <div className="inicio__cuerpo">
+      {!cargandoListas && errorListas === '' && listas.abiertas.length === 0 && (
+        <div className="inicio__vacio">
+          <span className="inicio__vacio-emoji">📭</span>
+          <p>
+            {listas.cerradas.length === 0
+              ? 'Todavía no tenés ninguna lista.'
+              : 'No tenés listas abiertas. Las cerradas están en el menú.'}
+          </p>
+          <button
+            type="button"
+            className="boton boton--verde"
+            onClick={() => setCreando(true)}
+          >
+            ＋ Crear lista nueva
+          </button>
+        </div>
+      )}
+
+      <div
+        className="inicio__cuerpo"
+        hidden={!cargandoListas && errorListas === '' && listas.abiertas.length === 0}
+      >
         <section className="inicio__bloque">
           <h2>Lista activa</h2>
           {cargandoListas && <p className="inicio__nota">Cargando…</p>}
