@@ -61,6 +61,51 @@ export async function crearLista(
   };
 }
 
+export interface UnidadCongelada {
+  unidad: string;
+  codigos: string[];
+  neto: number;
+}
+
+function esUnidadCongelada(valor: unknown): valor is UnidadCongelada {
+  if (typeof valor !== 'object' || valor === null) return false;
+  const posible = valor as Record<string, unknown>;
+  return typeof posible.unidad === 'string' && typeof posible.neto === 'number';
+}
+
+/** Los netos tal como quedaron al cerrar. No se recalculan nunca. */
+export async function obtenerBalanceCongelado(
+  credenciales: Credenciales,
+  idLista: string,
+): Promise<Resultado<UnidadCongelada[]>> {
+  const respuesta = await enviarEvento(credenciales, 'OBTENER_BALANCE_CONGELADO', {
+    idLista,
+  });
+
+  if (respuesta.estado !== 'ok') {
+    return { ok: false, mensaje: respuesta.mensaje, datos: null };
+  }
+
+  const contenido = respuesta.datos as { unidades?: unknown } | undefined;
+  const lista = Array.isArray(contenido?.unidades) ? contenido.unidades : [];
+
+  return { ok: true, mensaje: respuesta.mensaje, datos: lista.filter(esUnidadCongelada) };
+}
+
+/** Cerrar congela el balance; reabrir borra esa foto. Lo decide la planilla. */
+export async function cambiarEstadoDeLista(
+  credenciales: Credenciales,
+  idLista: string,
+  cerrar: boolean,
+): Promise<Resultado<null>> {
+  const respuesta = await enviarEvento(credenciales, 'CAMBIAR_ESTADO_DE_LISTA', {
+    idLista,
+    cerrar,
+  });
+
+  return { ok: respuesta.estado === 'ok', mensaje: respuesta.mensaje, datos: null };
+}
+
 export async function obtenerListas(
   credenciales: Credenciales,
 ): Promise<Resultado<Listas>> {

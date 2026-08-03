@@ -1,23 +1,11 @@
 /**
- * Listas de gastos y quién participa en cada una.
+ * Las listas de gastos: crearlas, leerlas y abrirlas o cerrarlas.
  *
- * `Lista_Personas` es una tabla puente y resuelve dos cosas a la vez: quién
- * participa de la lista, y cómo se agrupan a la hora de deber. La columna
- * `Unidad` es el propio código de la persona cuando va sola, o un código
- * compartido cuando dos o más comparten la plata.
- *
- * Esa distinción es el corazón del cálculo: **la división es por cabeza pero el
- * balance es por unidad**. En una lista de 4 personas donde dos de ellas son
- * una unidad, cada gasto se divide en 4 partes, pero esa unidad debe 2 de esas 4.
- * Por eso el agrupamiento vive por lista y no en la hoja `Personas`: los mismos
- * dos pueden ir juntos en una lista y separados en otra.
+ * Quiénes participan de cada una y cómo se agrupan vive en `Participantes.gs`.
  */
 
 const HOJA_LISTAS = 'Listas';
 const COLUMNAS_LISTAS = ['ID_Lista', 'Nombre', 'Mes', 'Año', 'Estado', 'Dueño'];
-
-const HOJA_LISTA_PERSONAS = 'Lista_Personas';
-const COLUMNAS_LISTA_PERSONAS = ['ID_Lista', 'Codigo_Persona', 'Unidad'];
 
 const ESTADO_ABIERTA = 'Abierta';
 const ESTADO_CERRADA = 'Cerrada';
@@ -42,25 +30,6 @@ function leerListas() {
     });
 }
 
-function leerListaPersonas() {
-  const filas = obtenerHoja(HOJA_LISTA_PERSONAS, COLUMNAS_LISTA_PERSONAS)
-    .getDataRange()
-    .getValues();
-  filas.shift();
-
-  return filas
-    .filter(function (fila) {
-      return String(fila[0]).trim() !== '';
-    })
-    .map(function (fila) {
-      return {
-        idLista: String(fila[0]).trim(),
-        codigoPersona: String(fila[1]).trim(),
-        unidad: String(fila[2]).trim(),
-      };
-    });
-}
-
 /** Identificadores correlativos L001, L002… Se busca el primero libre. */
 function generarIdLista(existentes) {
   const usados = existentes.map(function (lista) {
@@ -73,32 +42,6 @@ function generarIdLista(existentes) {
   }
 
   return 'L' + String(numero).padStart(3, '0');
-}
-
-/**
- * Reparte a cada participante su unidad de balance.
- *
- * Quien va solo tiene por unidad su propio código. Quien está agrupado comparte
- * una unidad con los suyos, armada concatenando los códigos (`U-P01-P02`): así,
- * mirando la planilla a ojo, se ve quiénes cuentan como uno sin tener que
- * cruzar con ninguna otra hoja.
- */
-function repartirUnidades(participantes, grupos) {
-  const unidadPorPersona = {};
-
-  participantes.forEach(function (codigo) {
-    unidadPorPersona[codigo] = codigo;
-  });
-
-  grupos.forEach(function (grupo) {
-    const ordenado = grupo.slice().sort();
-    const unidad = 'U-' + ordenado.join('-');
-    ordenado.forEach(function (codigo) {
-      unidadPorPersona[codigo] = unidad;
-    });
-  });
-
-  return unidadPorPersona;
 }
 
 /**
@@ -197,6 +140,65 @@ function ejecutarCrearLista(datos, quien) {
     estado: 'ok',
     mensaje: 'Lista "' + nombre + '" creada.',
     datos: { id: id },
+  });
+}
+
+/**
+ * Cierra o reabre una lista.
+ *
+ * Solo el dueño o el administrador. La comprobación vive acá y no en la app:
+ * esconder el botón es comodidad, lo que impide cerrar una lista ajena es esto.
+ *
+ * Al cerrar se congela el balance; al reabrir se borra esa foto y vuelve a
+ * calcularse en vivo hasta el próximo cierre.
+ */
+function ejecutarCambiarEstadoDeLista(datos, quien) {
+  const idLista = String(datos.idLista || '').trim();
+  const cerrar = datos.cerrar === true;
+
+  const hoja = obtenerHoja(HOJA_LISTAS, COLUMNAS_LISTAS);
+  const filas = hoja.getDataRange().getValues();
+
+  // Se busca por ID y no por posición: `leerListas` descarta las filas vacías,
+  // así que un renglón en blanco correría los índices y se tocaría otra lista.
+  let fila = -1;
+  for (let indice = 1; indice < filas.length; indice++) {
+    if (String(filas[indice][0]).trim() === idLista) {
+      fila = indice + 1;
+      break;
+    }
+  }
+
+  if (fila === -1) {
+    return responder({ estado: 'error', mensaje: 'No existe esa lista.' });
+  }
+
+  const dueño = String(filas[fila - 1][5]).trim();
+  const estadoActual = String(filas[fila - 1][4]).trim();
+
+  if (!quien.admin && dueño !== quien.codigo) {
+    return responder({
+      estado: 'error',
+      mensaje: 'Solo quien creó la lista puede cerrarla o reabrirla.',
+    });
+  }
+
+  const estadoNuevo = cerrar ? ESTADO_CERRADA : ESTADO_ABIERTA;
+
+  if (estadoActual === estadoNuevo) {
+    return responder({ estado: 'ok', mensaje: 'La lista ya estaba así.' });
+  }
+
+  // Primero se borra siempre la foto anterior: si una lista se cierra dos veces
+  // seguidas por un reintento, no tienen que quedar dos fotos superpuestas.
+  borrarBalanceDeCierre(idLista);
+  if (cerrar) guardarBalanceDeCierre(idLista);
+
+  hoja.getRange(fila, 5).setValue(estadoNuevo);
+
+  return responder({
+    estado: 'ok',
+    mensaje: cerrar ? 'Lista cerrada.' : 'Lista reabierta.',
   });
 }
 
