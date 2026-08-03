@@ -3,6 +3,7 @@ import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarPersonas } from '../hooks/usarPersonas';
 import { PedirPin } from '../componentes/PedirPin';
+import { CrearPrimeraPersona } from '../componentes/CrearPrimeraPersona';
 import './Ingreso.css';
 
 interface Props {
@@ -52,6 +53,10 @@ export function Ingreso({ credenciales, alIngresar }: Props) {
         </button>
       </div>
     );
+  }
+
+  if (personas.length === 0) {
+    return <CrearPrimeraPersona credenciales={credenciales} alCrear={alIngresar} />;
   }
 
   return (
