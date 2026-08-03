@@ -1,0 +1,52 @@
+.balance {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  padding: 2px 14px;
+  margin-bottom: 20px;
+}
+
+/* Filas de ancho completo, una debajo de la otra: son cifras que se comparan
+   verticalmente, no tarjetas sueltas para mirar de a una. */
+.balance__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borde-suave);
+  font-size: 13.5px;
+  color: var(--texto-secundario);
+}
+
+.balance__fila:last-child {
+  border-bottom: none;
+}
+
+.balance__fila--total {
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.balance__monto {
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.balance__monto--positivo {
+  color: var(--positivo);
+}
+
+.balance__monto--negativo {
+  color: var(--negativo);
+}
+
+.balance__rotulo {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--texto-muy-atenuado);
+  padding: 12px 0 4px;
+}

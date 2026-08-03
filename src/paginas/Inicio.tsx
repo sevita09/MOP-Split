@@ -127,7 +127,7 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
           <button
             type="button"
             className="inicio__menu"
-            aria-label="Ver los gastos cargados"
+            aria-label="Ver el balance y los gastos"
             onClick={() => setViendoGastos(true)}
           >
             📋

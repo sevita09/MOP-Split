@@ -62,6 +62,15 @@
   text-align: center;
 }
 
+.historial__rotulo {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--texto-muy-atenuado);
+  margin: 0 0 4px 2px;
+}
+
 .gasto {
   display: flex;
   align-items: center;
