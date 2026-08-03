@@ -4,6 +4,7 @@ import type { Credenciales } from '../api/planilla';
 import { usarListas } from '../hooks/usarListas';
 import { usarConceptos } from '../hooks/usarConceptos';
 import { MenuLateral } from '../componentes/MenuLateral';
+import { GrillaDeConceptos } from '../componentes/GrillaDeConceptos';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
 import './Inicio.css';
@@ -113,38 +114,28 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
         className="inicio__cuerpo"
         hidden={!cargandoListas && errorListas === '' && listas.abiertas.length === 0}
       >
-        <section className="inicio__bloque">
-          <h2>Lista activa</h2>
-          {cargandoListas && <p className="inicio__nota">Cargando…</p>}
-          {errorListas !== '' && <p className="aviso aviso--error">✕ {errorListas}</p>}
-          {!cargandoListas && errorListas === '' && activa && (
-            <p className="inicio__nota">
-              {activa.participantes.length} participante(s)
-              {activa.esDueño && ' · sos el dueño'}
-            </p>
-          )}
-        </section>
+        {errorListas !== '' && <p className="aviso aviso--error">✕ {errorListas}</p>}
 
-        <section className="inicio__bloque">
-          <h2>Conceptos</h2>
-          {cargandoConceptos && <p className="inicio__nota">Cargando…</p>}
-          {errorConceptos !== '' && <p className="aviso aviso--error">✕ {errorConceptos}</p>}
-          {!cargandoConceptos && errorConceptos === '' && (
-            <ul className="inicio__lista">
-              {conceptos.map((concepto) => (
-                <li key={concepto.id}>
-                  {concepto.emoji} {concepto.nombre}
-                  {persona.admin && concepto.sinCategorizar && (
-                    <span
-                      className="inicio__pendiente"
-                      title="Falta categorizar en la planilla"
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        {activa?.estado === 'Cerrada' ? (
+          <p className="aviso aviso--neutro">
+            Esta lista está cerrada: se puede mirar, pero no cargarle gastos.
+          </p>
+        ) : (
+          <section>
+            <h2 className="inicio__rotulo">Cargar gasto</h2>
+            {cargandoConceptos && <p className="inicio__nota">Cargando…</p>}
+            {errorConceptos !== '' && (
+              <p className="aviso aviso--error">✕ {errorConceptos}</p>
+            )}
+            {!cargandoConceptos && errorConceptos === '' && (
+              <GrillaDeConceptos
+                conceptos={conceptos}
+                mostrarPendientes={persona.admin}
+                alElegir={() => undefined}
+              />
+            )}
+          </section>
+        )}
       </div>
     </div>
   );
