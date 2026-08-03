@@ -4,11 +4,11 @@
  * `Lista_Personas` es una tabla puente y resuelve dos cosas a la vez: quién
  * participa de la lista, y cómo se agrupan a la hora de deber. La columna
  * `Unidad` es el propio código de la persona cuando va sola, o un código
- * compartido cuando dos o más comparten la plata (Mamá y Papá).
+ * compartido cuando dos o más comparten la plata.
  *
  * Esa distinción es el corazón del cálculo: **la división es por cabeza pero el
- * balance es por unidad**. En una lista de 4 personas donde Mamá y Papá son una
- * unidad, cada gasto se divide en 4 partes, pero esa unidad debe 2 de esas 4.
+ * balance es por unidad**. En una lista de 4 personas donde dos de ellas son
+ * una unidad, cada gasto se divide en 4 partes, pero esa unidad debe 2 de esas 4.
  * Por eso el agrupamiento vive por lista y no en la hoja `Personas`: los mismos
  * dos pueden ir juntos en una lista y separados en otra.
  */
