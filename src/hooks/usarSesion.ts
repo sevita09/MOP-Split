@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { fijarSesion } from '../api/planilla';
 import type { Persona, Sesion } from '../api/personas';
 
 const CLAVE_ALMACENAMIENTO = 'split-familiar:sesion';
@@ -46,16 +47,33 @@ function leerDelAlmacenamiento(): Sesion | null {
   }
 }
 
+/**
+ * El token se avisa a la capa de red **acá y no en un efecto**.
+ *
+ * React corre los efectos de los hijos antes que los del padre. Si esto viviera
+ * en un `useEffect` de `App`, las pantallas hijas ya habrían pedido sus datos
+ * con el token todavía en `null`: la planilla contestaría `SIN_SESION`, la app
+ * cerraría la sesión sola y el ingreso quedaría dando vueltas para siempre.
+ *
+ * Fijarlo al leer y al cambiar garantiza que ya esté puesto antes de que
+ * cualquier pantalla llegue a pedir nada.
+ */
 export function usarSesion() {
-  const [sesion, setSesion] = useState<Sesion | null>(leerDelAlmacenamiento);
+  const [sesion, setSesion] = useState<Sesion | null>(() => {
+    const guardada = leerDelAlmacenamiento();
+    fijarSesion(guardada?.token ?? null);
+    return guardada;
+  });
 
   const ingresar = useCallback((nueva: Sesion) => {
     localStorage.setItem(CLAVE_ALMACENAMIENTO, JSON.stringify(nueva));
+    fijarSesion(nueva.token);
     setSesion(nueva);
   }, []);
 
   const salir = useCallback(() => {
     localStorage.removeItem(CLAVE_ALMACENAMIENTO);
+    fijarSesion(null);
     setSesion(null);
   }, []);
 
