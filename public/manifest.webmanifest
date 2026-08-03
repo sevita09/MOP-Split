@@ -1,0 +1,26 @@
+{
+  "name": "Split Familiar",
+  "short_name": "Split",
+  "description": "Gastos compartidos de la familia",
+  "lang": "es-AR",
+  "start_url": "/MOP-Split/",
+  "scope": "/MOP-Split/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "/MOP-Split/iconos/icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/MOP-Split/iconos/icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

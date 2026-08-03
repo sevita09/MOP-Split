@@ -1,0 +1,7 @@
+.app {
+  min-height: 100dvh;
+  /* En el celular instalado, el contenido llega hasta la barra de estado y la
+     franja del gesto de inicio: sin esto el primer título queda tapado. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}

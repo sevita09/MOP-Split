@@ -1,0 +1,123 @@
+.guia {
+  list-style: none;
+  counter-reset: paso;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.guia__paso {
+  counter-increment: paso;
+  position: relative;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  padding: 16px 16px 16px 54px;
+}
+
+/* El número va en un círculo propio: son pasos que se hacen en orden y en otra
+   pestaña, así que conviene poder retomar sabiendo dónde quedaste. */
+.guia__paso::before {
+  content: counter(paso);
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--acento);
+  color: #fff;
+  font-family: var(--tipografia-numeros);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guia__paso h2 {
+  font-family: var(--tipografia-titulos);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 3px 0 8px;
+  letter-spacing: -0.2px;
+  text-wrap: balance;
+}
+
+.guia__paso p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--texto-secundario);
+}
+
+.guia__paso p:last-child {
+  margin-bottom: 0;
+}
+
+.guia__paso b {
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.guia__paso code {
+  font-family: var(--tipografia-numeros);
+  font-size: 12.5px;
+  background: var(--superficie-elevada);
+  border: 1px solid var(--borde-suave);
+  border-radius: 5px;
+  padding: 2px 6px;
+  color: var(--texto);
+}
+
+.guia__lista {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--texto-secundario);
+}
+
+.guia__propiedad {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0 0 12px;
+  align-items: center;
+}
+
+.guia__propiedad dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--texto-muy-atenuado);
+}
+
+.guia__propiedad dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.guia__token {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.guia__botones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.guia__botones .boton {
+  flex: 0 1 auto;
+}
+
+.guia__nota {
+  font-size: 12.5px !important;
+  color: var(--texto-atenuado) !important;
+  margin-top: 10px !important;
+}
