@@ -11,7 +11,7 @@ interface Props {
   alIngresar: (persona: Persona) => void;
 }
 
-/** Iniciales para el círculo: "Mamá" → M, "Juan Pablo" → JP. */
+/** Iniciales para el círculo: "Ana" → A, "Juan Pablo" → JP. */
 function iniciales(nombre: string) {
   return nombre
     .split(' ')

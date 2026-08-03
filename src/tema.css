@@ -96,6 +96,20 @@ body {
   border-color: var(--borde-hover);
 }
 
+/* Verde para la acción de crear una lista, como quedó definido en el diseño. */
+.boton--verde {
+  background: var(--verde-accion);
+  color: #fff;
+}
+
+.boton--verde:not(:disabled):hover {
+  background: var(--verde-accion-hover);
+}
+
+.boton--ancho {
+  width: 100%;
+}
+
 /* Campos y avisos: los usan varias pantallas, así que viven acá y no en el
    .css de ninguna en particular. */
 .campo {

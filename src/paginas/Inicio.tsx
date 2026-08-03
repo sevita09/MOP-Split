@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarListas } from '../hooks/usarListas';
 import { usarConceptos } from '../hooks/usarConceptos';
+import { nombreDelPeriodo } from '../utiles/meses';
+import { CrearLista } from './CrearLista';
 import './Inicio.css';
 
 interface Props {
@@ -18,12 +21,32 @@ interface Props {
  * de conceptos (v3.0.0).
  */
 export function Inicio({ credenciales, persona, alSalir }: Props) {
-  const { listas, cargando: cargandoListas, error: errorListas } = usarListas(credenciales);
+  const {
+    listas,
+    cargando: cargandoListas,
+    error: errorListas,
+    recargar: recargarListas,
+  } = usarListas(credenciales);
   const {
     conceptos,
     cargando: cargandoConceptos,
     error: errorConceptos,
   } = usarConceptos(credenciales);
+  const [creando, setCreando] = useState(false);
+
+  if (creando) {
+    return (
+      <CrearLista
+        credenciales={credenciales}
+        persona={persona}
+        alCrear={() => {
+          setCreando(false);
+          void recargarListas();
+        }}
+        alVolver={() => setCreando(false)}
+      />
+    );
+  }
 
   return (
     <div className="inicio">
@@ -42,21 +65,26 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
               {listas.abiertas.length} abierta(s) · {listas.cerradas.length} cerrada(s)
             </p>
             {listas.abiertas.length === 0 && listas.cerradas.length === 0 && (
-              <p className="inicio__nota">
-                Todavía no participás de ninguna lista. Crear listas viene en v2.1.
-              </p>
+              <p className="inicio__nota">Todavía no participás de ninguna lista.</p>
             )}
             <ul className="inicio__lista">
               {[...listas.abiertas, ...listas.cerradas].map((lista) => (
                 <li key={lista.id}>
-                  {lista.nombre} · {lista.mes}/{lista.anio} · {lista.estado} ·{' '}
-                  {lista.participantes.length} participante(s)
+                  {lista.nombre} · {nombreDelPeriodo(lista.mes, lista.anio)} ·{' '}
+                  {lista.estado} · {lista.participantes.length} participante(s)
                   {lista.esDueño && ' · sos el dueño'}
                 </li>
               ))}
             </ul>
           </>
         )}
+        <button
+          type="button"
+          className="boton boton--verde boton--ancho"
+          onClick={() => setCreando(true)}
+        >
+          ＋ Crear lista nueva
+        </button>
       </section>
 
       <section className="inicio__bloque">

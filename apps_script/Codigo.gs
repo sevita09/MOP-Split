@@ -51,6 +51,8 @@ function doPost(e) {
         return ejecutarObtenerConceptos();
       case 'OBTENER_LISTAS':
         return ejecutarObtenerListas(datos);
+      case 'CREAR_LISTA':
+        return ejecutarCrearLista(datos);
       default:
         return responder({
           estado: 'error',

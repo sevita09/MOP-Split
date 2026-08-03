@@ -55,7 +55,7 @@ export function CrearPrimeraPersona({ credenciales, alCrear }: Props) {
         <input
           type="text"
           autoCapitalize="words"
-          placeholder="Sebas"
+          placeholder="Tu nombre"
           value={nombre}
           onChange={(evento) => {
             setNombre(evento.target.value);
