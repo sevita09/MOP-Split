@@ -4,7 +4,8 @@
  *
  * `Categoria` y `Subcategoria` no son de la app: las completa a mano el
  * administrador en la planilla, para enlazar estos gastos con otro proyecto. La
- * app nunca las escribe ni las muestra.
+ * app nunca las escribe ni las muestra — de acá sale solo un `sinCategorizar`
+ * que le sirve al admin para saber que le falta completarlas.
  */
 
 const HOJA_CONCEPTOS = 'Conceptos';
@@ -17,8 +18,45 @@ const COLUMNAS_CONCEPTOS = [
   'Subcategoria',
 ];
 
+/**
+ * Catálogo con el que arranca una planilla nueva.
+ *
+ * Existe para que la primera pantalla no aparezca vacía: sin conceptos no hay
+ * ningún botón para tocar y no se puede cargar nada. Se siembra una sola vez,
+ * al crear la hoja, y desde ahí se edita en la planilla o desde la app.
+ */
+const CONCEPTOS_INICIALES = [
+  ['Supermercado', '🛒'],
+  ['Nafta', '⛽'],
+  ['Farmacia', '💊'],
+  ['Delivery', '🍔'],
+  ['Servicios', '💡'],
+  ['Internet', '📺'],
+];
+
+function obtenerHojaConceptos() {
+  const libro = SpreadsheetApp.getActiveSpreadsheet();
+  const existiaAntes = libro.getSheetByName(HOJA_CONCEPTOS) !== null;
+  const hoja = obtenerHoja(HOJA_CONCEPTOS, COLUMNAS_CONCEPTOS);
+
+  if (!existiaAntes) {
+    CONCEPTOS_INICIALES.forEach(function (inicial, indice) {
+      hoja.appendRow([
+        'C' + String(indice + 1).padStart(2, '0'),
+        inicial[0],
+        inicial[1],
+        'SI',
+        '',
+        '',
+      ]);
+    });
+  }
+
+  return hoja;
+}
+
 function leerConceptos() {
-  const filas = obtenerHoja(HOJA_CONCEPTOS, COLUMNAS_CONCEPTOS).getDataRange().getValues();
+  const filas = obtenerHojaConceptos().getDataRange().getValues();
   filas.shift();
 
   return filas
