@@ -64,6 +64,42 @@ function generarIdGasto(existentes) {
 }
 
 /**
+ * Los gastos de una lista, del más nuevo al más viejo.
+ *
+ * Viene con `puedeEditarlo` ya resuelto: es la planilla la que sabe quién pidió
+ * y quién pagó, y así la app no tiene que repetir la regla —ni arriesgarse a
+ * escribirla distinto.
+ */
+function ejecutarObtenerGastos(datos, quien) {
+  const idLista = String(datos.idLista || '').trim();
+
+  const gastos = leerGastos()
+    .filter(function (gasto) {
+      return gasto.idLista === idLista;
+    })
+    .map(function (gasto) {
+      return {
+        id: gasto.id,
+        idConcepto: gasto.idConcepto,
+        monto: gasto.monto,
+        descuento: gasto.descuento,
+        codigoPersonaPago: gasto.codigoPersonaPago,
+        fecha: gasto.fecha instanceof Date ? gasto.fecha.getTime() : 0,
+        puedeEditarlo: quien.admin || gasto.codigoPersonaPago === quien.codigo,
+      };
+    })
+    .sort(function (uno, otro) {
+      return otro.fecha - uno.fecha;
+    });
+
+  return responder({
+    estado: 'ok',
+    mensaje: gastos.length + ' gasto(s).',
+    datos: { gastos: gastos },
+  });
+}
+
+/**
  * Carga un gasto en una lista.
  *
  * Quién pagó sale de la sesión, nunca del pedido: si viniera del cliente,
