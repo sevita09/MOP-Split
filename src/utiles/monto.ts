@@ -57,6 +57,17 @@ export function formatearParaMostrar(actual: string): string {
   return decimales === undefined ? `$${conPuntos}` : `$${conPuntos},${decimales}`;
 }
 
+/**
+ * Un número ya guardado, listo para mostrar. Siempre con los dos centavos: en
+ * una columna de importes, `$1.200` y `$1.200,50` desalineados se leen mal.
+ */
+export function formatearNumero(valor: number): string {
+  return `$${valor.toLocaleString('es-AR', {
+    minimumFractionDigits: DECIMALES,
+    maximumFractionDigits: DECIMALES,
+  })}`;
+}
+
 /** El número que se manda a la planilla. Un monto incompleto vale cero. */
 export function aNumero(actual: string): number {
   const numero = Number(actual.replace(COMA, '.'));

@@ -68,6 +68,14 @@ function doPost(e) {
         return exigirSesion(persona, function () {
           return ejecutarCrearConcepto(datos);
         });
+      case 'OBTENER_GASTOS':
+        return exigirSesion(persona, function (quien) {
+          return ejecutarObtenerGastos(datos, quien);
+        });
+      case 'EDITAR_GASTO':
+        return exigirSesion(persona, function (quien) {
+          return ejecutarEditarGasto(datos, quien);
+        });
       case 'CREAR_GASTO':
         return exigirSesion(persona, function (quien) {
           return ejecutarCrearGasto(datos, quien);
