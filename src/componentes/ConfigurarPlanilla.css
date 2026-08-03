@@ -1,0 +1,70 @@
+.configurar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px 20px 48px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.configurar__volver {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--enlace);
+  font-family: var(--tipografia-base);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 0 12px;
+}
+
+.configurar__encabezado h1 {
+  font-family: var(--tipografia-titulos);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.configurar__encabezado p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--texto-atenuado);
+}
+
+.configurar__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  padding: 18px 16px;
+}
+
+.configurar__compartir {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--superficie);
+  border: 1px solid rgba(63, 185, 80, 0.4);
+  border-radius: 14px;
+  padding: 18px 16px;
+}
+
+.configurar__compartir h2 {
+  font-family: var(--tipografia-titulos);
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.configurar__compartir p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--texto-atenuado);
+}

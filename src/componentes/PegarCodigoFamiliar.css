@@ -1,0 +1,66 @@
+.pegar-codigo {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 40px 20px 48px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.pegar-codigo__encabezado h1 {
+  font-family: var(--tipografia-titulos);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.pegar-codigo__encabezado p {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--texto-atenuado);
+}
+
+.pegar-codigo textarea {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 12px 13px;
+  color: var(--texto);
+  /* El código es una sola tira larga sin espacios: en monoespaciada se ve si
+     quedó cortado al copiar. */
+  font-family: var(--tipografia-numeros);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  width: 100%;
+}
+
+.pegar-codigo textarea::placeholder {
+  color: var(--texto-muy-atenuado);
+}
+
+.pegar-codigo textarea:focus {
+  border-color: var(--acento-claro);
+}
+
+.boton--ancho {
+  width: 100%;
+}
+
+.pegar-codigo__enlace {
+  background: none;
+  border: none;
+  color: var(--enlace);
+  font-family: var(--tipografia-base);
+  font-size: 13.5px;
+  cursor: pointer;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.pegar-codigo__enlace:hover {
+  text-decoration: underline;
+}
