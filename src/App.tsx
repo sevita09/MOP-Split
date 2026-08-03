@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { fijarSesion } from './api/planilla';
+import { fijarAlCaerLaSesion, fijarSesion } from './api/planilla';
 import { cerrarSesion } from './api/personas';
 import { Configuracion } from './paginas/Configuracion';
 import { Ingreso } from './paginas/Ingreso';
@@ -17,6 +17,11 @@ export function App() {
   useEffect(() => {
     fijarSesion(sesion?.token ?? null);
   }, [sesion]);
+
+  useEffect(() => {
+    fijarAlCaerLaSesion(salir);
+    return () => fijarAlCaerLaSesion(null);
+  }, [salir]);
 
   async function alSalir() {
     await cerrarSesion(credenciales);

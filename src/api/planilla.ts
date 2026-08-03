@@ -36,6 +36,20 @@ export function fijarSesion(token: string | null) {
   tokenDeSesion = token;
 }
 
+let avisarSesionCaida: (() => void) | null = null;
+
+/**
+ * Qué hacer cuando la planilla rechaza el token.
+ *
+ * Se avisa desde acá y no desde cada pantalla porque puede pasar en cualquier
+ * pedido, y en todos la respuesta es la misma: volver al ingreso. Si cada
+ * pantalla lo resolviera por su cuenta, la que se olvidara dejaría al usuario
+ * mirando un error que no sabe cómo arreglar.
+ */
+export function fijarAlCaerLaSesion(avisar: (() => void) | null) {
+  avisarSesionCaida = avisar;
+}
+
 /**
  * Manda un evento al Web App y devuelve su respuesta ya parseada.
  *
@@ -80,7 +94,11 @@ export async function enviarEvento(
   const cuerpo = await respuesta.text();
 
   try {
-    return JSON.parse(cuerpo) as RespuestaPlanilla;
+    const respuestaPlanilla = JSON.parse(cuerpo) as RespuestaPlanilla;
+
+    if (respuestaPlanilla.codigo === 'SIN_SESION') avisarSesionCaida?.();
+
+    return respuestaPlanilla;
   } catch {
     // Apps Script devuelve HTML cuando el despliegue no da acceso a cualquiera
     // o cuando la URL apunta al editor en vez de al Web App publicado.
