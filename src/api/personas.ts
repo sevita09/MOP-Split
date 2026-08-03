@@ -45,38 +45,51 @@ export async function obtenerPersonas(
   return { ok: true, mensaje: respuesta.mensaje, datos: lista.filter(esPersona) };
 }
 
+/** Lo que hace falta guardar en el celular para seguir identificado. */
+export interface Sesion {
+  persona: Persona;
+  token: string;
+}
+
 export async function iniciarSesion(
   credenciales: Credenciales,
   codigo: string,
   pin: string,
-): Promise<Resultado<Persona>> {
+): Promise<Resultado<Sesion>> {
   const respuesta = await enviarEvento(credenciales, 'LOGIN', { codigo, pin });
-  return interpretarPersona(respuesta.estado === 'ok', respuesta.mensaje, respuesta.datos);
+  return interpretarSesion(respuesta.estado === 'ok', respuesta.mensaje, respuesta.datos);
 }
 
 export async function crearPrimeraPersona(
   credenciales: Credenciales,
   nombre: string,
   pin: string,
-): Promise<Resultado<Persona>> {
+): Promise<Resultado<Sesion>> {
   const respuesta = await enviarEvento(credenciales, 'CREAR_PRIMERA_PERSONA', {
     nombre,
     pin,
   });
-  return interpretarPersona(respuesta.estado === 'ok', respuesta.mensaje, respuesta.datos);
+  return interpretarSesion(respuesta.estado === 'ok', respuesta.mensaje, respuesta.datos);
 }
 
-function interpretarPersona(
+export async function cerrarSesion(credenciales: Credenciales): Promise<void> {
+  // Si falla no se avisa: el celular se desloguea igual y la fila queda
+  // huérfana en la planilla, que es molesto pero no rompe nada.
+  await enviarEvento(credenciales, 'CERRAR_SESION');
+}
+
+function interpretarSesion(
   ok: boolean,
   mensaje: string,
   datos: unknown,
-): Resultado<Persona> {
+): Resultado<Sesion> {
   if (!ok) return { ok: false, mensaje, datos: null };
 
-  const contenido = datos as { persona?: unknown } | undefined;
-  if (!esPersona(contenido?.persona)) {
-    return { ok: false, mensaje: 'La planilla respondió sin la persona.', datos: null };
+  const contenido = datos as { persona?: unknown; sesion?: unknown } | undefined;
+
+  if (!esPersona(contenido?.persona) || typeof contenido?.sesion !== 'string') {
+    return { ok: false, mensaje: 'La planilla respondió sin la sesión.', datos: null };
   }
 
-  return { ok: true, mensaje, datos: contenido.persona };
+  return { ok: true, mensaje, datos: { persona: contenido.persona, token: contenido.sesion } };
 }

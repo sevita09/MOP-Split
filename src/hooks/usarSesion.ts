@@ -1,30 +1,45 @@
 import { useCallback, useState } from 'react';
-import type { Persona } from '../api/personas';
+import type { Persona, Sesion } from '../api/personas';
 
 const CLAVE_ALMACENAMIENTO = 'split-familiar:sesion';
 
 /**
- * Quién está usando la app en este celular.
+ * Quién está usando la app en este celular, y con qué token.
  *
  * Persiste porque el PIN se pide una sola vez por aparato: pedirlo en cada
  * apertura sería insoportable para cargar un gasto de treinta segundos, y no
  * agregaría seguridad real — quien tiene el celular desbloqueado ya tiene todo.
  *
- * No guarda el PIN, solo quién es.
+ * Guarda el token pero **nunca el PIN**. El token no vence: se revoca borrando
+ * su fila en la hoja `Sesiones`.
  */
-function leerDelAlmacenamiento(): Persona | null {
+function leerDelAlmacenamiento(): Sesion | null {
   const guardado = localStorage.getItem(CLAVE_ALMACENAMIENTO);
   if (!guardado) return null;
 
   try {
-    const parseado = JSON.parse(guardado) as Partial<Persona>;
-    if (typeof parseado.codigo !== 'string' || typeof parseado.nombre !== 'string') {
+    const parseado = JSON.parse(guardado) as {
+      persona?: Partial<Persona>;
+      token?: unknown;
+    };
+
+    const { persona, token } = parseado;
+
+    if (
+      typeof persona?.codigo !== 'string' ||
+      typeof persona?.nombre !== 'string' ||
+      typeof token !== 'string'
+    ) {
       return null;
     }
+
     return {
-      codigo: parseado.codigo,
-      nombre: parseado.nombre,
-      admin: parseado.admin === true,
+      persona: {
+        codigo: persona.codigo,
+        nombre: persona.nombre,
+        admin: persona.admin === true,
+      },
+      token,
     };
   } catch {
     return null;
@@ -32,17 +47,17 @@ function leerDelAlmacenamiento(): Persona | null {
 }
 
 export function usarSesion() {
-  const [persona, setPersona] = useState<Persona | null>(leerDelAlmacenamiento);
+  const [sesion, setSesion] = useState<Sesion | null>(leerDelAlmacenamiento);
 
-  const ingresar = useCallback((nueva: Persona) => {
+  const ingresar = useCallback((nueva: Sesion) => {
     localStorage.setItem(CLAVE_ALMACENAMIENTO, JSON.stringify(nueva));
-    setPersona(nueva);
+    setSesion(nueva);
   }, []);
 
   const salir = useCallback(() => {
     localStorage.removeItem(CLAVE_ALMACENAMIENTO);
-    setPersona(null);
+    setSesion(null);
   }, []);
 
-  return { persona, ingresar, salir };
+  return { sesion, ingresar, salir };
 }

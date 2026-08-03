@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Persona } from '../api/personas';
+import type { Persona, Sesion } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarPersonas } from '../hooks/usarPersonas';
 import { PedirPin } from '../componentes/PedirPin';
@@ -8,7 +8,7 @@ import './Ingreso.css';
 
 interface Props {
   credenciales: Credenciales;
-  alIngresar: (persona: Persona) => void;
+  alIngresar: (sesion: Sesion) => void;
 }
 
 /** Iniciales para el círculo: "Ana" → A, "Juan Pablo" → JP. */

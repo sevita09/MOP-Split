@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { fijarQuienUsaLaApp } from './api/planilla';
+import { fijarSesion } from './api/planilla';
+import { cerrarSesion } from './api/personas';
 import { Configuracion } from './paginas/Configuracion';
 import { Ingreso } from './paginas/Ingreso';
 import { Inicio } from './paginas/Inicio';
@@ -9,11 +10,18 @@ import './App.css';
 
 export function App() {
   const { credenciales, guardar, estanCompletas } = usarCredenciales();
-  const { persona, ingresar, salir } = usarSesion();
+  const { sesion, ingresar, salir } = usarSesion();
 
+  // Se fija antes de que cualquier pantalla pida datos: si se hiciera después,
+  // el primer pedido saldría sin token y la planilla lo rechazaría.
   useEffect(() => {
-    fijarQuienUsaLaApp(persona?.codigo ?? null);
-  }, [persona]);
+    fijarSesion(sesion?.token ?? null);
+  }, [sesion]);
+
+  async function alSalir() {
+    await cerrarSesion(credenciales);
+    salir();
+  }
 
   if (!estanCompletas) {
     return (
@@ -23,7 +31,7 @@ export function App() {
     );
   }
 
-  if (!persona) {
+  if (!sesion) {
     return (
       <main className="app">
         <Ingreso credenciales={credenciales} alIngresar={ingresar} />
@@ -33,7 +41,11 @@ export function App() {
 
   return (
     <main className="app">
-      <Inicio credenciales={credenciales} persona={persona} alSalir={salir} />
+      <Inicio
+        credenciales={credenciales}
+        persona={sesion.persona}
+        alSalir={() => void alSalir()}
+      />
     </main>
   );
 }
