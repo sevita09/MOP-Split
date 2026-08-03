@@ -9,7 +9,7 @@ import { usarSesion } from './hooks/usarSesion';
 import './App.css';
 
 export function App() {
-  const { credenciales, guardar, estanCompletas } = usarCredenciales();
+  const { credenciales, guardar, borrar, estanCompletas } = usarCredenciales();
   const { sesion, ingresar, salir } = usarSesion();
 
   // Se fija antes de que cualquier pantalla pida datos: si se hiciera después,
@@ -28,6 +28,18 @@ export function App() {
     salir();
   }
 
+  /**
+   * Vuelve a la pantalla de conexión.
+   *
+   * Hace falta cuando la planilla guardada ya no sirve: se borró, cambió de
+   * dirección o quedó con un backend viejo. Sin esto la app queda tapiada, y la
+   * única salida sería borrar los datos del navegador.
+   */
+  function alDesconectar() {
+    salir();
+    borrar();
+  }
+
   if (!estanCompletas) {
     return (
       <main className="app">
@@ -39,7 +51,11 @@ export function App() {
   if (!sesion) {
     return (
       <main className="app">
-        <Ingreso credenciales={credenciales} alIngresar={ingresar} />
+        <Ingreso
+          credenciales={credenciales}
+          alIngresar={ingresar}
+          alDesconectar={alDesconectar}
+        />
       </main>
     );
   }
@@ -50,6 +66,7 @@ export function App() {
         credenciales={credenciales}
         persona={sesion.persona}
         alSalir={() => void alSalir()}
+        alDesconectar={alDesconectar}
       />
     </main>
   );
