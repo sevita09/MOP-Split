@@ -28,12 +28,15 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
     conceptos,
     cargando: cargandoConceptos,
     error: errorConceptos,
+    recargar: recargarConceptos,
   } = usarConceptos(credenciales);
 
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [creando, setCreando] = useState(false);
   const [idElegida, setIdElegida] = useState<string | null>(null);
-  const [conceptoElegido, setConceptoElegido] = useState<Concepto | null>(null);
+  // `'nuevo'` es el botón Otro: hay que cargar un gasto de algo que todavía
+  // no está en el catálogo.
+  const [cargaAbierta, setCargaAbierta] = useState<Concepto | 'nuevo' | null>(null);
 
   const todas = [...listas.abiertas, ...listas.cerradas];
   // Sin elección explícita se muestra la primera abierta. El `?? null` importa
@@ -134,21 +137,25 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
               <GrillaDeConceptos
                 conceptos={conceptos}
                 mostrarPendientes={persona.admin}
-                alElegir={setConceptoElegido}
-                alPedirNuevo={() => undefined}
+                alElegir={setCargaAbierta}
+                alPedirNuevo={() => setCargaAbierta('nuevo')}
               />
             )}
           </section>
         )}
       </div>
 
-      {conceptoElegido && activa && (
+      {cargaAbierta && activa && (
         <CargarGasto
           credenciales={credenciales}
-          concepto={conceptoElegido}
+          concepto={cargaAbierta === 'nuevo' ? null : cargaAbierta}
           idLista={activa.id}
-          alCargar={() => setConceptoElegido(null)}
-          alCerrar={() => setConceptoElegido(null)}
+          alCargar={() => {
+            setCargaAbierta(null);
+            // Un concepto nuevo tiene que aparecer en la grilla enseguida.
+            void recargarConceptos();
+          }}
+          alCerrar={() => setCargaAbierta(null)}
         />
       )}
     </div>
