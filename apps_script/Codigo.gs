@@ -45,6 +45,8 @@ function doPost(e) {
         return ejecutarObtenerPersonas();
       case 'LOGIN':
         return ejecutarLogin(datos);
+      case 'CREAR_PRIMERA_PERSONA':
+        return ejecutarCrearPrimeraPersona(datos);
       default:
         return responder({
           estado: 'error',

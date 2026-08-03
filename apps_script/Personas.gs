@@ -58,6 +58,48 @@ function generarCodigoPersona(existentes) {
 }
 
 /**
+ * Crea la primera persona, que queda como Admin.
+ *
+ * Solo funciona con la hoja vacía, y por eso no pide autenticación: si pidiera
+ * PIN no habría forma de arrancar, porque todavía no existe nadie con PIN.
+ * Apenas hay una persona cargada, esta puerta se cierra sola y las siguientes
+ * se agregan a mano en la planilla.
+ */
+function ejecutarCrearPrimeraPersona(datos) {
+  const existentes = leerPersonas();
+
+  if (existentes.length > 0) {
+    return responder({
+      estado: 'error',
+      mensaje: 'La planilla ya tiene personas cargadas. Agregá las demás a mano.',
+    });
+  }
+
+  const nombre = String(datos.nombre || '').trim();
+  const pin = String(datos.pin || '').trim();
+
+  if (nombre === '') {
+    return responder({ estado: 'error', mensaje: 'Falta el nombre.' });
+  }
+
+  if (!new RegExp('^\\d{' + LARGO_PIN + '}$').test(pin)) {
+    return responder({
+      estado: 'error',
+      mensaje: 'El PIN tiene que ser de ' + LARGO_PIN + ' dígitos.',
+    });
+  }
+
+  const codigo = generarCodigoPersona(existentes);
+  obtenerHojaPersonas().appendRow([codigo, nombre, pin, 'SI']);
+
+  return responder({
+    estado: 'ok',
+    mensaje: 'Listo, ' + nombre + '. Quedaste como administrador.',
+    datos: { persona: { codigo: codigo, nombre: nombre, admin: true } },
+  });
+}
+
+/**
  * Valida el PIN de una persona.
  *
  * El mensaje de error es el mismo para "no existe ese código" y "el PIN no
