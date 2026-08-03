@@ -58,6 +58,19 @@ la planilla**, una fila por persona:
   empieza con cero no pierda ese cero.
 - `Admin` es `SI` o `NO`.
 
+### Sacar un celular
+
+Al poner el PIN, la planilla emite un token y lo guarda en la hoja `Sesiones`,
+una fila por celular. Desde ahí, ese aparato se identifica con el token y no
+volviendo a pedir el PIN.
+
+**Los tokens no vencen**: pedirle el PIN cada tanto a alguien que solo quiere
+cargar un gasto es una molestia sin contrapartida. Para dar de baja un celular
+—porque se perdió o porque alguien dejó de usar la app— **borrás su fila en
+`Sesiones`**. Ese aparato queda afuera en el próximo pedido y vuelve a la
+pantalla de ingreso, sin afectarle nada al resto ni obligar a cambiar ningún
+PIN.
+
 ---
 
 ## Conectar la planilla

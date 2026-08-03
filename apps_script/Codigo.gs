@@ -38,21 +38,30 @@ function doPost(e) {
       return responder({ estado: 'error', mensaje: 'Token inválido.' });
     }
 
+    // La identidad sale del token, no del código que el celular dice tener.
+    // Las acciones de abajo que no la exigen son las que corren antes de que
+    // exista sesión: probar la conexión, listar nombres para elegir, ingresar.
+    const persona = personaDeLaSesion(datos);
+
     switch (datos.accion) {
       case 'PING':
-        return ejecutarPing(datos);
+        return ejecutarPing(persona);
       case 'OBTENER_PERSONAS':
         return ejecutarObtenerPersonas();
       case 'LOGIN':
         return ejecutarLogin(datos);
       case 'CREAR_PRIMERA_PERSONA':
         return ejecutarCrearPrimeraPersona(datos);
+      case 'CERRAR_SESION':
+        return ejecutarCerrarSesion(datos);
       case 'OBTENER_CONCEPTOS':
-        return ejecutarObtenerConceptos();
+        return exigirSesion(persona, ejecutarObtenerConceptos);
       case 'OBTENER_LISTAS':
-        return ejecutarObtenerListas(datos);
+        return exigirSesion(persona, ejecutarObtenerListas);
       case 'CREAR_LISTA':
-        return ejecutarCrearLista(datos);
+        return exigirSesion(persona, function (quien) {
+          return ejecutarCrearLista(datos, quien);
+        });
       default:
         return responder({
           estado: 'error',
@@ -74,9 +83,11 @@ function responder(cuerpo) {
  * El PING escribe en su propia hoja `Ping` y no en una de datos: es ruido de
  * diagnóstico y se puede vaciar entera cuando molesta, sin tocar nada real.
  */
-function ejecutarPing(datos) {
+function ejecutarPing(quien) {
   const hoja = obtenerHoja('Ping', ['Fecha', 'Usuario', 'Detalle']);
-  hoja.appendRow([new Date(), datos.usuario || 'sin identificar', 'Prueba de conexión']);
+  // El PING corre también durante la configuración, antes de que exista
+  // sesión: por eso es el único evento que acepta no saber quién lo pidió.
+  hoja.appendRow([new Date(), quien ? quien.nombre : 'sin identificar', 'Prueba de conexión']);
   return responder({
     estado: 'ok',
     mensaje: 'Conexión OK. Se escribió una fila en la hoja Ping.',

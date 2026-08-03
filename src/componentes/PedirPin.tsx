@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { iniciarSesion, LARGO_PIN } from '../api/personas';
-import type { Persona } from '../api/personas';
+import type { Persona, Sesion } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { TecladoNumerico } from './TecladoNumerico';
 import './PedirPin.css';
@@ -8,7 +8,7 @@ import './PedirPin.css';
 interface Props {
   persona: Persona;
   credenciales: Credenciales;
-  alIngresar: (persona: Persona) => void;
+  alIngresar: (sesion: Sesion) => void;
   alVolver: () => void;
 }
 

@@ -14,22 +14,40 @@ export interface Credenciales {
 export interface RespuestaPlanilla {
   estado: 'ok' | 'error';
   mensaje: string;
+  /** `SIN_SESION` cuando el token ya no vale y hay que volver a poner el PIN. */
+  codigo?: string;
   datos?: unknown;
 }
 
-let codigoDeQuienUsaLaApp: string | null = null;
+let tokenDeSesion: string | null = null;
 
 /**
- * Fija quién está usando la app, para que viaje en cada pedido.
+ * Fija el token de la sesión, que viaja en cada pedido.
  *
  * Vive acá arriba y no como parámetro de `enviarEvento` porque es transversal a
  * todas las operaciones, igual que una cabecera de autenticación: si fuera
  * parámetro habría que arrastrarlo por cada función de cada módulo de `api/`.
- * Desde v3 la planilla lo va a necesitar para saber quién carga o edita un
- * gasto.
+ *
+ * Antes se mandaba el código de la persona y la planilla le creía. Ahora se
+ * manda el token que ella misma emitió, y la identidad la resuelve allá: el
+ * celular ya no puede decir que es otro.
  */
-export function fijarQuienUsaLaApp(codigo: string | null) {
-  codigoDeQuienUsaLaApp = codigo;
+export function fijarSesion(token: string | null) {
+  tokenDeSesion = token;
+}
+
+let avisarSesionCaida: (() => void) | null = null;
+
+/**
+ * Qué hacer cuando la planilla rechaza el token.
+ *
+ * Se avisa desde acá y no desde cada pantalla porque puede pasar en cualquier
+ * pedido, y en todos la respuesta es la misma: volver al ingreso. Si cada
+ * pantalla lo resolviera por su cuenta, la que se olvidara dejaría al usuario
+ * mirando un error que no sabe cómo arreglar.
+ */
+export function fijarAlCaerLaSesion(avisar: (() => void) | null) {
+  avisarSesionCaida = avisar;
 }
 
 /**
@@ -54,7 +72,7 @@ export async function enviarEvento(
       body: JSON.stringify({
         accion,
         token: credenciales.token,
-        usuario: codigoDeQuienUsaLaApp,
+        sesion: tokenDeSesion,
         ...datos,
       }),
       redirect: 'follow',
@@ -76,7 +94,11 @@ export async function enviarEvento(
   const cuerpo = await respuesta.text();
 
   try {
-    return JSON.parse(cuerpo) as RespuestaPlanilla;
+    const respuestaPlanilla = JSON.parse(cuerpo) as RespuestaPlanilla;
+
+    if (respuestaPlanilla.codigo === 'SIN_SESION') avisarSesionCaida?.();
+
+    return respuestaPlanilla;
   } catch {
     // Apps Script devuelve HTML cuando el despliegue no da acceso a cualquiera
     // o cuando la URL apunta al editor en vez de al Web App publicado.

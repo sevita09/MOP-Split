@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { crearPrimeraPersona, LARGO_PIN } from '../api/personas';
-import type { Persona } from '../api/personas';
+import type { Sesion } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { TecladoNumerico } from './TecladoNumerico';
 import './PedirPin.css';
 
 interface Props {
   credenciales: Credenciales;
-  alCrear: (persona: Persona) => void;
+  alCrear: (sesion: Sesion) => void;
 }
 
 /**

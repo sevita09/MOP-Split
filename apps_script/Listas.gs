@@ -109,11 +109,11 @@ function repartirUnidades(participantes, grupos) {
  * unidad, un error de tipeo dejaría a dos personas que deberían contar como una
  * contando por separado, y el balance saldría mal sin que nada falle.
  */
-function ejecutarCrearLista(datos) {
+function ejecutarCrearLista(datos, quien) {
   const nombre = String(datos.nombre || '').trim();
   const mes = Number(datos.mes);
   const anio = Number(datos.anio);
-  const dueño = String(datos.usuario || '').trim();
+  const dueño = quien.codigo;
 
   const participantes = (Array.isArray(datos.participantes) ? datos.participantes : [])
     .map(function (codigo) {
@@ -207,8 +207,8 @@ function ejecutarCrearLista(datos) {
  * los necesita para mostrar quién está, y traerlos acá evita un segundo pedido
  * por cada lista.
  */
-function ejecutarObtenerListas(datos) {
-  const codigo = String(datos.usuario || '').trim();
+function ejecutarObtenerListas(quien) {
+  const codigo = quien.codigo;
   const participaciones = leerListaPersonas();
 
   const mias = participaciones
