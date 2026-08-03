@@ -95,7 +95,10 @@ function ejecutarCrearPrimeraPersona(datos) {
   return responder({
     estado: 'ok',
     mensaje: 'Listo, ' + nombre + '. Quedaste como administrador.',
-    datos: { persona: { codigo: codigo, nombre: nombre, admin: true } },
+    datos: {
+      persona: { codigo: codigo, nombre: nombre, admin: true },
+      sesion: crearSesion(codigo),
+    },
   });
 }
 
@@ -123,6 +126,7 @@ function ejecutarLogin(datos) {
     mensaje: 'Hola, ' + persona.nombre + '.',
     datos: {
       persona: { codigo: persona.codigo, nombre: persona.nombre, admin: persona.admin },
+      sesion: crearSesion(persona.codigo),
     },
   });
 }
