@@ -3,8 +3,11 @@ import { obtenerConceptos } from '../api/conceptos';
 import type { Concepto } from '../api/conceptos';
 import type { Credenciales } from '../api/planilla';
 
-/** El catálogo de conceptos. Ver la nota de dependencias en `usarListas`. */
-export function usarConceptos({ url, token }: Credenciales) {
+/**
+ * El catálogo de conceptos, con sus datos de uso en la lista que se está
+ * mirando. Ver la nota de dependencias en `usarListas`.
+ */
+export function usarConceptos({ url, token }: Credenciales, idLista: string) {
   const [conceptos, setConceptos] = useState<Concepto[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -12,7 +15,7 @@ export function usarConceptos({ url, token }: Credenciales) {
   const recargar = useCallback(async () => {
     setCargando(true);
 
-    const resultado = await obtenerConceptos({ url, token });
+    const resultado = await obtenerConceptos({ url, token }, idLista);
 
     if (resultado.ok) {
       setConceptos(resultado.datos ?? []);
@@ -22,7 +25,7 @@ export function usarConceptos({ url, token }: Credenciales) {
     }
 
     setCargando(false);
-  }, [url, token]);
+  }, [url, token, idLista]);
 
   useEffect(() => {
     void recargar();

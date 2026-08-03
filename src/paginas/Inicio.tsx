@@ -24,12 +24,6 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
     error: errorListas,
     recargar: recargarListas,
   } = usarListas(credenciales);
-  const {
-    conceptos,
-    cargando: cargandoConceptos,
-    error: errorConceptos,
-    recargar: recargarConceptos,
-  } = usarConceptos(credenciales);
 
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [creando, setCreando] = useState(false);
@@ -43,6 +37,15 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
   // cuando la lista elegida desaparece —se cerró desde otro celular— para no
   // quedar mostrando el encabezado de algo que ya no está.
   const activa = todas.find((lista) => lista.id === idElegida) ?? listas.abiertas[0] ?? null;
+
+  // Va después de `activa` porque el orden de los conceptos depende de qué se
+  // cargó en esa lista: al cambiar de lista, la grilla se reordena sola.
+  const {
+    conceptos,
+    cargando: cargandoConceptos,
+    error: errorConceptos,
+    recargar: recargarConceptos,
+  } = usarConceptos(credenciales, activa?.id ?? '');
 
   if (creando) {
     return (
