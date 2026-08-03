@@ -5,6 +5,7 @@ import type { Credenciales } from '../api/planilla';
 import { usarListas } from '../hooks/usarListas';
 import { usarConceptos } from '../hooks/usarConceptos';
 import { usarSincronizacion } from '../hooks/usarSincronizacion';
+import { usarPersonas } from '../hooks/usarPersonas';
 import { MenuLateral } from '../componentes/MenuLateral';
 import { GrillaDeConceptos } from '../componentes/GrillaDeConceptos';
 import { CargarGasto } from '../componentes/CargarGasto';
@@ -12,6 +13,7 @@ import { PuntoDeSincronizacion } from '../componentes/PuntoDeSincronizacion';
 import { Aviso } from '../componentes/Aviso';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
+import { Historial } from './Historial';
 import './Inicio.css';
 
 interface Props {
@@ -38,6 +40,7 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
   // Se cuenta en vez de usar un booleano: cargar dos gastos seguidos tiene que
   // volver a mostrar el aviso, y el texto es el mismo las dos veces.
   const [gastosCargados, setGastosCargados] = useState(0);
+  const [viendoGastos, setViendoGastos] = useState(false);
 
   const todas = [...listas.abiertas, ...listas.cerradas];
   // Sin elección explícita se muestra la primera abierta. El `?? null` importa
@@ -53,6 +56,19 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
     error: errorConceptos,
     recargar: recargarConceptos,
   } = usarConceptos(credenciales, activa?.id ?? '');
+  const { personas } = usarPersonas(credenciales);
+
+  if (viendoGastos && activa) {
+    return (
+      <Historial
+        credenciales={credenciales}
+        lista={activa}
+        conceptos={conceptos}
+        personas={personas}
+        alVolver={() => setViendoGastos(false)}
+      />
+    );
+  }
 
   if (creando) {
     return (
@@ -107,6 +123,16 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
         </div>
         {persona.admin && <span className="inicio__etiqueta">Admin</span>}
         <PuntoDeSincronizacion estado={sincronizacion} />
+        {activa && (
+          <button
+            type="button"
+            className="inicio__menu"
+            aria-label="Ver los gastos cargados"
+            onClick={() => setViendoGastos(true)}
+          >
+            📋
+          </button>
+        )}
       </header>
 
       {!cargandoListas && errorListas === '' && listas.abiertas.length === 0 && (

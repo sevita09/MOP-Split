@@ -1,5 +1,5 @@
 /**
- * Carga de gastos.
+ * Carga y corrección de gastos.
  *
  * Quién pagó no viaja en el pedido: lo resuelve la planilla desde la sesión.
  * Mandarlo desde acá dejaría que cualquiera cargue un gasto a nombre de otro.
@@ -9,10 +9,43 @@ import { enviarEvento } from './planilla';
 import type { Credenciales } from './planilla';
 import type { Resultado } from './personas';
 
+export interface Gasto {
+  id: string;
+  idConcepto: string;
+  monto: number;
+  descuento: number;
+  codigoPersonaPago: string;
+  fecha: number;
+  /** Lo decide la planilla: quien pagó, o el administrador. */
+  puedeEditarlo: boolean;
+}
+
 export interface GastoNuevo {
   idLista: string;
   idConcepto: string;
   monto: number;
+}
+
+function esGasto(valor: unknown): valor is Gasto {
+  if (typeof valor !== 'object' || valor === null) return false;
+  const posible = valor as Record<string, unknown>;
+  return typeof posible.id === 'string' && typeof posible.monto === 'number';
+}
+
+export async function obtenerGastos(
+  credenciales: Credenciales,
+  idLista: string,
+): Promise<Resultado<Gasto[]>> {
+  const respuesta = await enviarEvento(credenciales, 'OBTENER_GASTOS', { idLista });
+
+  if (respuesta.estado !== 'ok') {
+    return { ok: false, mensaje: respuesta.mensaje, datos: null };
+  }
+
+  const contenido = respuesta.datos as { gastos?: unknown } | undefined;
+  const lista = Array.isArray(contenido?.gastos) ? contenido.gastos : [];
+
+  return { ok: true, mensaje: respuesta.mensaje, datos: lista.filter(esGasto) };
 }
 
 export async function crearGasto(

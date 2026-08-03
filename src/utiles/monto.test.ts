@@ -5,6 +5,7 @@ import {
   agregarDigito,
   borrarUltimo,
   esMontoValido,
+  formatearNumero,
   formatearParaMostrar,
 } from './monto';
 
@@ -88,5 +89,12 @@ describe('monto', () => {
 
   test('la pantalla vacia muestra cero', () => {
     expect(formatearParaMostrar('')).toBe('$0');
+  });
+
+  test('un monto guardado se muestra siempre con dos centavos', () => {
+    // En una columna de importes, $1.200 y $1.200,50 desalineados se leen mal.
+    expect(formatearNumero(1200)).toBe('$1.200,00');
+    expect(formatearNumero(1200.5)).toBe('$1.200,50');
+    expect(formatearNumero(0)).toBe('$0,00');
   });
 });
