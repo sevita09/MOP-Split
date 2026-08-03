@@ -49,6 +49,7 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
       <MenuLateral
         abierto={menuAbierto}
         abiertas={listas.abiertas}
+        cerradas={listas.cerradas}
         idActiva={null}
         alElegir={() => setMenuAbierto(false)}
         alCerrar={() => setMenuAbierto(false)}
