@@ -57,6 +57,34 @@ function generarCodigoPersona(existentes) {
   return 'P' + String(numero).padStart(2, '0');
 }
 
+/**
+ * Valida el PIN de una persona.
+ *
+ * El mensaje de error es el mismo para "no existe ese código" y "el PIN no
+ * coincide": si fueran distintos, probando códigos se podría averiguar quién
+ * está cargado en la planilla.
+ */
+function ejecutarLogin(datos) {
+  const codigo = String(datos.codigo || '').trim();
+  const pin = String(datos.pin || '').trim();
+
+  const persona = leerPersonas().filter(function (candidata) {
+    return candidata.codigo === codigo;
+  })[0];
+
+  if (!persona || persona.pin !== pin) {
+    return responder({ estado: 'error', mensaje: 'El PIN no coincide.' });
+  }
+
+  return responder({
+    estado: 'ok',
+    mensaje: 'Hola, ' + persona.nombre + '.',
+    datos: {
+      persona: { codigo: persona.codigo, nombre: persona.nombre, admin: persona.admin },
+    },
+  });
+}
+
 function ejecutarObtenerPersonas() {
   const personas = leerPersonas().map(function (persona) {
     return { codigo: persona.codigo, nombre: persona.nombre, admin: persona.admin };

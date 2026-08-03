@@ -43,6 +43,8 @@ function doPost(e) {
         return ejecutarPing(datos);
       case 'OBTENER_PERSONAS':
         return ejecutarObtenerPersonas();
+      case 'LOGIN':
+        return ejecutarLogin(datos);
       default:
         return responder({
           estado: 'error',
