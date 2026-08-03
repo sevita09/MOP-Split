@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import type { Concepto } from '../api/conceptos';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarListas } from '../hooks/usarListas';
 import { usarConceptos } from '../hooks/usarConceptos';
 import { MenuLateral } from '../componentes/MenuLateral';
 import { GrillaDeConceptos } from '../componentes/GrillaDeConceptos';
+import { CargarGasto } from '../componentes/CargarGasto';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
 import './Inicio.css';
@@ -31,6 +33,7 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [creando, setCreando] = useState(false);
   const [idElegida, setIdElegida] = useState<string | null>(null);
+  const [conceptoElegido, setConceptoElegido] = useState<Concepto | null>(null);
 
   const todas = [...listas.abiertas, ...listas.cerradas];
   // Sin elección explícita se muestra la primera abierta. El `?? null` importa
@@ -131,13 +134,23 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
               <GrillaDeConceptos
                 conceptos={conceptos}
                 mostrarPendientes={persona.admin}
-                alElegir={() => undefined}
+                alElegir={setConceptoElegido}
                 alPedirNuevo={() => undefined}
               />
             )}
           </section>
         )}
       </div>
+
+      {conceptoElegido && activa && (
+        <CargarGasto
+          credenciales={credenciales}
+          concepto={conceptoElegido}
+          idLista={activa.id}
+          alCargar={() => setConceptoElegido(null)}
+          alCerrar={() => setConceptoElegido(null)}
+        />
+      )}
     </div>
   );
 }
