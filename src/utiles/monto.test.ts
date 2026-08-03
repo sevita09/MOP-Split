@@ -53,8 +53,13 @@ describe('monto', () => {
     expect(teclear('0,99')).toBe('0,99');
   });
 
-  test('no se pueden escribir mas de nueve enteros', () => {
-    expect(teclear('12345678901')).toBe('123456789');
+  test('el monto mas alto que se puede escribir es 999.999.999,99', () => {
+    expect(formatearParaMostrar(teclear('999999999,99'))).toBe('$999.999.999,99');
+    expect(aNumero(teclear('999999999,99'))).toBe(999999999.99);
+  });
+
+  test('no entra un decimo digito entero', () => {
+    expect(teclear('1234567890')).toBe('123456789');
   });
 
   test('borrar saca el ultimo caracter tecleado', () => {

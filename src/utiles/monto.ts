@@ -12,7 +12,10 @@
 /** Dos decimales, como cualquier precio. */
 const DECIMALES = 2;
 
-/** Tope de dígitos enteros: mil millones alcanza y evita desbordes raros. */
+/**
+ * Tope de dígitos enteros. El monto más alto que se acepta es
+ * `999.999.999,99`: nueve enteros más los dos centavos.
+ */
 const MAXIMO_ENTEROS = 9;
 
 const COMA = ',';
