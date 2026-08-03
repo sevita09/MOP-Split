@@ -1,7 +1,4 @@
 import { useState } from 'react';
-// El código del backend se sirve como texto desde el mismo archivo que se
-// versiona: así el botón de copiar nunca queda desfasado del .gs real.
-import codigoDelBackend from '../../apps_script/Codigo.gs?raw';
 import './GuiaDeConexion.css';
 
 interface Props {
@@ -9,17 +6,33 @@ interface Props {
   alGenerarToken: () => void;
 }
 
+/**
+ * Los `.gs` se sirven como texto desde los mismos archivos que se versionan,
+ * buscados con un glob y no uno por uno: cuando sumemos `Listas.gs` o
+ * `Gastos.gs`, su botón aparece solo y la guía no queda desfasada del backend.
+ */
+const ARCHIVOS_DEL_BACKEND = Object.entries(
+  import.meta.glob('../../apps_script/*.gs', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  }),
+)
+  .map(([ruta, contenido]) => ({
+    nombre: ruta.split('/').pop() ?? ruta,
+    contenido: contenido as string,
+  }))
+  .sort((uno, otro) => uno.nombre.localeCompare(otro.nombre));
+
 // Sin esta línea, Apps Script pide permiso sobre todas las hojas de cálculo de
 // la cuenta. Con ella, solo sobre la planilla donde está pegado el script.
 const LINEA_PERMISO =
   '"oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"]';
 
-type Copiable = 'codigo' | 'permiso' | 'token';
-
 export function GuiaDeConexion({ tokenSugerido, alGenerarToken }: Props) {
-  const [copiado, setCopiado] = useState<Copiable | null>(null);
+  const [copiado, setCopiado] = useState<string | null>(null);
 
-  async function copiar(texto: string, cual: Copiable) {
+  async function copiar(texto: string, cual: string) {
     await navigator.clipboard.writeText(texto);
     setCopiado(cual);
     setTimeout(() => setCopiado(null), 2000);
@@ -38,12 +51,24 @@ export function GuiaDeConexion({ tokenSugerido, alGenerarToken }: Props) {
       <li className="guia__paso">
         <h2>Pegá el código del backend</h2>
         <p>
-          Borrá todo lo que haya en el editor y pegá esto en su lugar. Después guardá con
-          el disquete (o <code>Ctrl+S</code>).
+          Son {ARCHIVOS_DEL_BACKEND.length} archivos. Con el primero, borrá todo lo que
+          haya en el editor y pegalo en su lugar. Para cada uno de los otros, tocá el{' '}
+          <b>+</b> al lado de <b>Archivos</b> → <b>Secuencia de comandos</b>, ponele el
+          nombre sin el <code>.gs</code>, y pegá adentro.
         </p>
-        <button type="button" className="boton boton--secundario" onClick={() => copiar(codigoDelBackend, 'codigo')}>
-          {copiado === 'codigo' ? '✓ Copiado' : 'Copiar código'}
-        </button>
+        <div className="guia__botones">
+          {ARCHIVOS_DEL_BACKEND.map((archivo) => (
+            <button
+              key={archivo.nombre}
+              type="button"
+              className="boton boton--secundario"
+              onClick={() => copiar(archivo.contenido, archivo.nombre)}
+            >
+              {copiado === archivo.nombre ? '✓ Copiado' : archivo.nombre}
+            </button>
+          ))}
+        </div>
+        <p className="guia__nota">Al terminar, guardá con el disquete (o <code>Ctrl+S</code>).</p>
       </li>
 
       <li className="guia__paso">

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -8,6 +9,11 @@ const RUTA_BASE = '/MOP-Split/';
 export default defineConfig({
   base: RUTA_BASE,
   plugins: [react()],
+  test: {
+    // Los tests no tocan la red ni la planilla: son de lógica pura.
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
+  },
   server: {
     // 5173 lo ocupa el front de MOP Inversiones. Puerto fijo y strictPort para
     // que nunca salte solo: si saltara, uno sigue mirando la pestaña vieja.

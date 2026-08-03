@@ -28,9 +28,35 @@ cualquier aplicación, pero sin pasar por la tienda.
 2. Botón **Compartir** (el cuadradito con la flecha para arriba).
 3. Bajar hasta **Agregar a inicio** → **Agregar**.
 
-La primera vez hay que conectar la planilla; después queda guardada en ese
-celular y no la vuelve a pedir. Cada persona instala la app en su propio
-teléfono y todas apuntan a la misma planilla.
+Cada persona instala la app en su propio teléfono y todas apuntan a la misma
+planilla.
+
+---
+
+## Cómo entra cada uno
+
+**Una sola persona conecta la planilla** (la sección de abajo). Al terminar, la
+app le muestra un botón **Copiar código familiar**: un texto que empieza con
+`SPLIT1-` y que lleva adentro la dirección y la clave.
+
+**Los demás pegan ese código y listo.** No ven ninguna URL ni ninguna clave.
+Después eligen su nombre de una lista y ponen su PIN de 6 números. El celular se
+lo acuerda: el PIN se pide una sola vez por aparato.
+
+Si la hoja `Personas` está vacía, la app deja crear la primera persona, que
+queda como **administradora**. Al resto de la familia se los agrega **a mano en
+la planilla**, una fila por persona:
+
+| Codigo | Nombre | PIN | Admin |
+|---|---|---|---|
+| P01 | Persona1 | 123456 | SI |
+| P02 | Persona2 | 987654 | NO |
+
+- `Codigo` es un identificador estable, correlativo (`P01`, `P02`…). No se
+  cambia nunca: es a lo que apuntan los gastos.
+- `PIN` son 6 dígitos. La columna está formateada como texto para que un PIN que
+  empieza con cero no pierda ese cero.
+- `Admin` es `SI` o `NO`.
 
 ---
 
@@ -41,7 +67,9 @@ el código del backend y otro para generar la clave secreta—, así que alcanza
 seguirla. El resumen, para tenerlo a mano:
 
 1. En la planilla de Google: **Extensiones → Apps Script**.
-2. Pegar el contenido de [`apps_script/Codigo.gs`](apps_script/Codigo.gs) y guardar.
+2. Pegar el contenido de [`apps_script/Codigo.gs`](apps_script/Codigo.gs) y de
+   [`apps_script/Personas.gs`](apps_script/Personas.gs), cada uno en su archivo,
+   y guardar.
 3. En **Configuración del proyecto**, tildar *Mostrar el archivo de manifiesto
    appsscript.json*, y agregarle la clave `oauthScopes` como está en
    [`apps_script/appsscript.json`](apps_script/appsscript.json).
@@ -75,6 +103,7 @@ Levanta en http://localhost:5175 con puerto fijo (el 5173 lo usa MOP Inversiones
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | Servidor de desarrollo |
+| `npm test` | Corre la suite de tests |
 | `npm run typecheck` | Chequeo de tipos |
 | `npm run build` | Compila a `dist/` |
 | `npm run preview` | Sirve `dist/` para probar el build |

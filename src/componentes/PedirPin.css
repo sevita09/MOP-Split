@@ -1,0 +1,61 @@
+.pedir-pin {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 40px 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pedir-pin__volver {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--enlace);
+  font-family: var(--tipografia-base);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pedir-pin__encabezado h1 {
+  font-family: var(--tipografia-titulos);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.pedir-pin__encabezado p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--texto-atenuado);
+}
+
+.pedir-pin__puntos {
+  display: flex;
+  gap: 14px;
+}
+
+.punto {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--borde-hover);
+  background: transparent;
+  transition: background 0.12s;
+}
+
+.punto--lleno {
+  background: var(--texto);
+  border-color: var(--texto);
+}
+
+.pedir-pin__estado {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--texto-atenuado);
+  text-align: center;
+}
