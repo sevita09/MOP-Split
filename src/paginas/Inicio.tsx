@@ -132,6 +132,7 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
                 conceptos={conceptos}
                 mostrarPendientes={persona.admin}
                 alElegir={() => undefined}
+                alPedirNuevo={() => undefined}
               />
             )}
           </section>

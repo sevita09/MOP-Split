@@ -6,6 +6,7 @@ interface Props {
   /** El punto de "falta categorizar" solo tiene sentido para quien lo completa. */
   mostrarPendientes: boolean;
   alElegir: (concepto: Concepto) => void;
+  alPedirNuevo: () => void;
 }
 
 /**
@@ -17,7 +18,12 @@ interface Props {
  * información —el color en esta app significa deber o que te deban— y le
  * sacaría fuerza a esa señal.
  */
-export function GrillaDeConceptos({ conceptos, mostrarPendientes, alElegir }: Props) {
+export function GrillaDeConceptos({
+  conceptos,
+  mostrarPendientes,
+  alElegir,
+  alPedirNuevo,
+}: Props) {
   return (
     <div className="grilla">
       {conceptos.map((concepto) => (
@@ -34,6 +40,13 @@ export function GrillaDeConceptos({ conceptos, mostrarPendientes, alElegir }: Pr
           <span className="concepto__nombre">{concepto.nombre}</span>
         </button>
       ))}
+
+      {/* Va último y con el borde punteado: es la salida para lo que no está en
+          el catálogo, no una opción más entre las habituales. */}
+      <button type="button" className="concepto concepto--nuevo" onClick={alPedirNuevo}>
+        <span className="concepto__emoji">➕</span>
+        <span className="concepto__nombre">Otro</span>
+      </button>
     </div>
   );
 }

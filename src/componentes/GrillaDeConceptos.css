@@ -45,6 +45,14 @@
   line-height: 1.25;
 }
 
+.concepto--nuevo {
+  border-style: dashed;
+}
+
+.concepto--nuevo .concepto__nombre {
+  color: var(--texto-atenuado);
+}
+
 .concepto__pendiente {
   position: absolute;
   top: 10px;
