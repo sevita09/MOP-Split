@@ -48,3 +48,38 @@
 .crear-lista select:focus {
   border-color: var(--acento-claro);
 }
+
+.crear-lista__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto-secundario);
+  font-family: var(--tipografia-base);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.chip:not(:disabled):hover {
+  border-color: var(--borde-hover);
+}
+
+.chip--elegido {
+  background: rgba(31, 111, 235, 0.16);
+  border-color: var(--acento);
+  color: var(--texto);
+}
+
+/* El propio usuario va siempre elegido: se muestra en firme, no apagado, para
+   que no parezca un error sino una condición. */
+.chip:disabled {
+  cursor: default;
+}

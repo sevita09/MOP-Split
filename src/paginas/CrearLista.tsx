@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { crearLista } from '../api/listas';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
+import { usarPersonas } from '../hooks/usarPersonas';
 import { NUMEROS_DE_MES, nombreDelMes } from '../utiles/meses';
 import './CrearLista.css';
 
@@ -15,13 +16,28 @@ interface Props {
 const HOY = new Date();
 
 export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) {
+  const { personas } = usarPersonas(credenciales);
   const [nombre, setNombre] = useState('');
   const [mes, setMes] = useState(HOY.getMonth() + 1);
   const [anio, setAnio] = useState(HOY.getFullYear());
+  // Quien crea la lista participa siempre y no se puede sacar: la vista filtra
+  // por participación, así que si no estuviera no vería su propia lista.
+  const [elegidos, setElegidos] = useState<string[]>([persona.codigo]);
   const [error, setError] = useState('');
   const [creando, setCreando] = useState(false);
 
   const anios = [HOY.getFullYear() - 1, HOY.getFullYear(), HOY.getFullYear() + 1];
+
+  function alternar(codigo: string) {
+    if (codigo === persona.codigo) return;
+
+    setElegidos((previos) =>
+      previos.includes(codigo)
+        ? previos.filter((elegido) => elegido !== codigo)
+        : [...previos, codigo],
+    );
+    setError('');
+  }
 
   async function alConfirmar() {
     setCreando(true);
@@ -31,9 +47,7 @@ export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) 
       nombre: nombre.trim(),
       mes,
       anio,
-      // Quien crea la lista siempre participa: la vista filtra por
-      // participación, así que si no estuviera no la vería ni él mismo.
-      participantes: [persona.codigo],
+      participantes: elegidos,
       grupos: [],
     });
 
@@ -93,6 +107,33 @@ export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) 
             ))}
           </select>
         </label>
+      </div>
+
+      <div className="campo">
+        <span className="campo__rotulo">Participantes</span>
+        <div className="crear-lista__chips">
+          {personas.map((candidata) => {
+            const elegido = elegidos.includes(candidata.codigo);
+            const soyYo = candidata.codigo === persona.codigo;
+
+            return (
+              <button
+                key={candidata.codigo}
+                type="button"
+                className={elegido ? 'chip chip--elegido' : 'chip'}
+                aria-pressed={elegido}
+                disabled={soyYo}
+                onClick={() => alternar(candidata.codigo)}
+              >
+                {candidata.nombre}
+                {soyYo && ' (vos)'}
+              </button>
+            );
+          })}
+        </div>
+        <span className="campo__ayuda">
+          Cada gasto se divide en partes iguales entre estas personas.
+        </span>
       </div>
 
       <button
