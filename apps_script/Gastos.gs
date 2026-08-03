@@ -64,6 +64,88 @@ function generarIdGasto(existentes) {
 }
 
 /**
+ * Corrige el monto o el descuento de un gasto ya cargado.
+ *
+ * **La regla de permiso se valida acá y no en la app.** Esconder el lápiz en la
+ * pantalla es comodidad: cualquiera de la familia podría armar el pedido a mano
+ * y editar un gasto ajeno. Lo único que lo impide es esta comprobación, contra
+ * la identidad que sale del token de sesión.
+ *
+ * Tampoco se toca un gasto de una lista cerrada: su balance ya quedó congelado
+ * y se usó para saldar cuentas, así que moverlo sería cambiar un número que ya
+ * se pagó.
+ */
+function ejecutarEditarGasto(datos, quien) {
+  const idGasto = String(datos.idGasto || '').trim();
+
+  // Se busca la fila por su ID en la planilla y no por la posición en la lista
+  // ya leída: `leerGastos` descarta las filas vacías, así que una sola fila en
+  // blanco en el medio correría los índices y se terminaría editando otro gasto.
+  const hoja = obtenerHojaGastos();
+  const filas = hoja.getDataRange().getValues();
+
+  let fila = -1;
+  for (let indice = 1; indice < filas.length; indice++) {
+    if (String(filas[indice][0]).trim() === idGasto) {
+      fila = indice + 1;
+      break;
+    }
+  }
+
+  if (fila === -1) {
+    return responder({ estado: 'error', mensaje: 'No existe ese gasto.' });
+  }
+
+  const gasto = {
+    idLista: String(filas[fila - 1][1]).trim(),
+    monto: Number(filas[fila - 1][3]) || 0,
+    codigoPersonaPago: String(filas[fila - 1][4]).trim(),
+    descuento: Number(filas[fila - 1][6]) || 0,
+  };
+
+  if (!quien.admin && gasto.codigoPersonaPago !== quien.codigo) {
+    return responder({
+      estado: 'error',
+      mensaje: 'Solo puede corregirlo quien lo pagó.',
+    });
+  }
+
+  const lista = leerListas().filter(function (candidata) {
+    return candidata.id === gasto.idLista;
+  })[0];
+
+  if (!lista || lista.estado !== ESTADO_ABIERTA) {
+    return responder({
+      estado: 'error',
+      mensaje: 'La lista está cerrada: sus gastos ya no se tocan.',
+    });
+  }
+
+  const monto = datos.monto === undefined ? gasto.monto : Number(datos.monto);
+  const descuento = datos.descuento === undefined ? gasto.descuento : Number(datos.descuento);
+
+  if (!(monto > 0)) {
+    return responder({ estado: 'error', mensaje: 'El monto tiene que ser mayor a cero.' });
+  }
+
+  if (!(descuento >= 0)) {
+    return responder({ estado: 'error', mensaje: 'El descuento no puede ser negativo.' });
+  }
+
+  if (descuento > monto) {
+    return responder({
+      estado: 'error',
+      mensaje: 'El descuento no puede ser mayor que el gasto.',
+    });
+  }
+
+  hoja.getRange(fila, 4).setValue(monto);
+  hoja.getRange(fila, 7).setValue(descuento);
+
+  return responder({ estado: 'ok', mensaje: 'Gasto actualizado.' });
+}
+
+/**
  * Los gastos de una lista, del más nuevo al más viejo.
  *
  * Viene con `puedeEditarlo` ya resuelto: es la planilla la que sabe quién pidió
