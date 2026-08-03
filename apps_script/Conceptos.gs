@@ -75,6 +75,76 @@ function leerConceptos() {
     });
 }
 
+/** Identificadores correlativos C01, C02… Se busca el primero libre. */
+function generarIdConcepto(existentes) {
+  const usados = existentes.map(function (concepto) {
+    return concepto.id;
+  });
+
+  let numero = 1;
+  while (usados.indexOf('C' + String(numero).padStart(2, '0')) !== -1) {
+    numero++;
+  }
+
+  return 'C' + String(numero).padStart(2, '0');
+}
+
+/** Para comparar nombres: "  Farmacia " y "farmacia" son el mismo concepto. */
+function normalizarNombre(nombre) {
+  return String(nombre).trim().toLowerCase();
+}
+
+/**
+ * Crea un concepto que la app no tenía.
+ *
+ * Nace con `Fijo` en NO y sin categoría: esas dos columnas las completa a mano
+ * el administrador, y hasta que lo haga la app le muestra un punto rojo.
+ *
+ * Si ya existe uno con el mismo nombre se devuelve ese en vez de crear otro:
+ * dos personas cargando "Farmacia" el mismo día no tienen que terminar con dos
+ * conceptos iguales, que después dividirían el historial en dos.
+ */
+function ejecutarCrearConcepto(datos) {
+  const nombre = String(datos.nombre || '').trim();
+  const emoji = String(datos.emoji || '').trim() || '🧾';
+
+  if (nombre === '') {
+    return responder({ estado: 'error', mensaje: 'Falta el nombre del gasto.' });
+  }
+
+  const existentes = leerConceptos();
+  const repetido = existentes.filter(function (concepto) {
+    return normalizarNombre(concepto.nombre) === normalizarNombre(nombre);
+  })[0];
+
+  if (repetido) {
+    return responder({
+      estado: 'ok',
+      mensaje: 'Ya existía "' + repetido.nombre + '".',
+      datos: {
+        concepto: {
+          id: repetido.id,
+          nombre: repetido.nombre,
+          emoji: repetido.emoji,
+          fijo: repetido.fijo,
+          sinCategorizar: repetido.categoria === '' || repetido.subcategoria === '',
+        },
+      },
+    });
+  }
+
+  const id = generarIdConcepto(existentes);
+  obtenerHojaConceptos().appendRow([id, nombre, emoji, 'NO', '', '']);
+
+  return responder({
+    estado: 'ok',
+    mensaje: 'Concepto "' + nombre + '" creado.',
+    datos: {
+      concepto: { id: id, nombre: nombre, emoji: emoji, fijo: false, sinCategorizar: true },
+    },
+  });
+}
+
 function ejecutarObtenerConceptos() {
   const conceptos = leerConceptos().map(function (concepto) {
     return {

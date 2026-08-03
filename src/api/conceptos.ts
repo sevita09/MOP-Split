@@ -23,6 +23,32 @@ function esConcepto(valor: unknown): valor is Concepto {
   return typeof posible.id === 'string' && typeof posible.nombre === 'string';
 }
 
+/**
+ * Crea un concepto que no estaba en el catálogo.
+ *
+ * No se manda emoji: la planilla le pone uno neutro y el administrador le
+ * cambia el que corresponde cuando completa la categoría. Elegirlo acá le
+ * agregaría un paso a lo que tiene que ser rápido.
+ */
+export async function crearConcepto(
+  credenciales: Credenciales,
+  nombre: string,
+): Promise<Resultado<Concepto>> {
+  const respuesta = await enviarEvento(credenciales, 'CREAR_CONCEPTO', { nombre });
+
+  if (respuesta.estado !== 'ok') {
+    return { ok: false, mensaje: respuesta.mensaje, datos: null };
+  }
+
+  const contenido = respuesta.datos as { concepto?: unknown } | undefined;
+
+  if (!esConcepto(contenido?.concepto)) {
+    return { ok: false, mensaje: 'La planilla respondió sin el concepto.', datos: null };
+  }
+
+  return { ok: true, mensaje: respuesta.mensaje, datos: contenido.concepto };
+}
+
 export async function obtenerConceptos(
   credenciales: Credenciales,
 ): Promise<Resultado<Concepto[]>> {

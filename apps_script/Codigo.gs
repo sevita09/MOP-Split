@@ -62,6 +62,10 @@ function doPost(e) {
         return exigirSesion(persona, function (quien) {
           return ejecutarCrearLista(datos, quien);
         });
+      case 'CREAR_CONCEPTO':
+        return exigirSesion(persona, function () {
+          return ejecutarCrearConcepto(datos);
+        });
       case 'CREAR_GASTO':
         return exigirSesion(persona, function (quien) {
           return ejecutarCrearGasto(datos, quien);
