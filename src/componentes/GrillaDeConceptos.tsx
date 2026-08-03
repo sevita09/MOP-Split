@@ -1,4 +1,5 @@
 import type { Concepto } from '../api/conceptos';
+import { ordenarConceptos } from '../utiles/ordenDeConceptos';
 import './GrillaDeConceptos.css';
 
 interface Props {
@@ -26,7 +27,7 @@ export function GrillaDeConceptos({
 }: Props) {
   return (
     <div className="grilla">
-      {conceptos.map((concepto) => (
+      {ordenarConceptos(conceptos).map((concepto) => (
         <button
           key={concepto.id}
           type="button"
