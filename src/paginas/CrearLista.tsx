@@ -23,10 +23,15 @@ export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) 
   // Quien crea la lista participa siempre y no se puede sacar: la vista filtra
   // por participación, así que si no estuviera no vería su propia lista.
   const [elegidos, setElegidos] = useState<string[]>([persona.codigo]);
+  const [grupos, setGrupos] = useState<string[][]>([]);
+  const [aFusionar, setAFusionar] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [creando, setCreando] = useState(false);
 
   const anios = [HOY.getFullYear() - 1, HOY.getFullYear(), HOY.getFullYear() + 1];
+
+  const agrupados = grupos.flat();
+  const nombrePorCodigo = new Map(personas.map((una) => [una.codigo, una.nombre]));
 
   function alternar(codigo: string) {
     if (codigo === persona.codigo) return;
@@ -36,7 +41,37 @@ export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) 
         ? previos.filter((elegido) => elegido !== codigo)
         : [...previos, codigo],
     );
+    // Sacar a alguien de la lista tiene que sacarlo también de su unidad, o se
+    // mandaría un grupo con gente que no participa y la planilla lo rechaza.
+    setGrupos((previos) =>
+      previos
+        .map((grupo) => grupo.filter((integrante) => integrante !== codigo))
+        .filter((grupo) => grupo.length > 1),
+    );
+    setAFusionar((previos) => previos.filter((integrante) => integrante !== codigo));
     setError('');
+  }
+
+  function alternarFusion(codigo: string) {
+    setAFusionar((previos) =>
+      previos.includes(codigo)
+        ? previos.filter((integrante) => integrante !== codigo)
+        : [...previos, codigo],
+    );
+  }
+
+  function fusionar() {
+    if (aFusionar.length < 2) return;
+    setGrupos((previos) => [...previos, aFusionar]);
+    setAFusionar([]);
+  }
+
+  function deshacerGrupo(indice: number) {
+    setGrupos((previos) => previos.filter((_, posicion) => posicion !== indice));
+  }
+
+  function nombreDe(codigo: string) {
+    return nombrePorCodigo.get(codigo) ?? codigo;
   }
 
   async function alConfirmar() {
@@ -48,7 +83,7 @@ export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) 
       mes,
       anio,
       participantes: elegidos,
-      grupos: [],
+      grupos,
     });
 
     setCreando(false);
@@ -134,6 +169,53 @@ export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) 
         <span className="campo__ayuda">
           Cada gasto se divide en partes iguales entre estas personas.
         </span>
+      </div>
+
+      <div className="campo">
+        <span className="campo__rotulo">Unidades de balance (opcional)</span>
+        <span className="campo__ayuda">
+          Si dos comparten la plata, fusionalos: la división sigue siendo por cabeza,
+          pero deben y les deben como una sola unidad.
+        </span>
+
+        {grupos.map((grupo, indice) => (
+          <div key={grupo.join('-')} className="unidad">
+            <span>{grupo.map(nombreDe).join(' + ')}</span>
+            <button
+              type="button"
+              className="unidad__deshacer"
+              onClick={() => deshacerGrupo(indice)}
+              aria-label="Deshacer la unidad"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+
+        <div className="crear-lista__chips">
+          {elegidos
+            .filter((codigo) => !agrupados.includes(codigo))
+            .map((codigo) => (
+              <button
+                key={codigo}
+                type="button"
+                className={aFusionar.includes(codigo) ? 'chip chip--elegido' : 'chip'}
+                aria-pressed={aFusionar.includes(codigo)}
+                onClick={() => alternarFusion(codigo)}
+              >
+                {nombreDe(codigo)}
+              </button>
+            ))}
+        </div>
+
+        <button
+          type="button"
+          className="boton boton--secundario crear-lista__fusionar"
+          disabled={aFusionar.length < 2}
+          onClick={fusionar}
+        >
+          Fusionar seleccionados
+        </button>
       </div>
 
       <button
