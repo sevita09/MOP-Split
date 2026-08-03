@@ -9,6 +9,9 @@
 import { enviarEvento } from './planilla';
 import type { Credenciales } from './planilla';
 
+/** Tiene que coincidir con `LARGO_PIN` de `apps_script/Personas.gs`. */
+export const LARGO_PIN = 6;
+
 export interface Persona {
   codigo: string;
   nombre: string;

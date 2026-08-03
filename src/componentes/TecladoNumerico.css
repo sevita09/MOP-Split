@@ -1,0 +1,47 @@
+.teclado {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.teclado__pantalla {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+}
+
+.teclado__teclas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.teclado__tecla {
+  height: 62px;
+  border-radius: 14px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto);
+  font-family: var(--tipografia-numeros);
+  font-variant-numeric: tabular-nums;
+  font-size: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.15s;
+}
+
+.teclado__tecla:hover {
+  border-color: var(--borde-hover);
+  background: var(--superficie-elevada);
+}
+
+.teclado__tecla:active {
+  background: var(--borde);
+}
+
+.teclado__tecla--suave {
+  color: var(--texto-atenuado);
+  font-family: var(--tipografia-base);
+  font-size: 20px;
+}

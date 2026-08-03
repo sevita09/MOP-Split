@@ -2,10 +2,12 @@ import { useState } from 'react';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarPersonas } from '../hooks/usarPersonas';
+import { PedirPin } from '../componentes/PedirPin';
 import './Ingreso.css';
 
 interface Props {
   credenciales: Credenciales;
+  alIngresar: (persona: Persona) => void;
 }
 
 /** Iniciales para el círculo: "Mamá" → M, "Juan Pablo" → JP. */
@@ -18,9 +20,20 @@ function iniciales(nombre: string) {
     .join('');
 }
 
-export function Ingreso({ credenciales }: Props) {
+export function Ingreso({ credenciales, alIngresar }: Props) {
   const { personas, cargando, error, recargar } = usarPersonas(credenciales);
   const [elegida, setElegida] = useState<Persona | null>(null);
+
+  if (elegida) {
+    return (
+      <PedirPin
+        persona={elegida}
+        credenciales={credenciales}
+        alIngresar={alIngresar}
+        alVolver={() => setElegida(null)}
+      />
+    );
+  }
 
   if (cargando) {
     return (
@@ -53,11 +66,7 @@ export function Ingreso({ credenciales }: Props) {
           <button
             key={persona.codigo}
             type="button"
-            className={
-              elegida?.codigo === persona.codigo
-                ? 'persona persona--elegida'
-                : 'persona'
-            }
+            className="persona"
             onClick={() => setElegida(persona)}
           >
             <span className="persona__inicial">{iniciales(persona.nombre)}</span>
