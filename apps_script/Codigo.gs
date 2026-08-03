@@ -47,6 +47,10 @@ function doPost(e) {
         return ejecutarLogin(datos);
       case 'CREAR_PRIMERA_PERSONA':
         return ejecutarCrearPrimeraPersona(datos);
+      case 'OBTENER_CONCEPTOS':
+        return ejecutarObtenerConceptos();
+      case 'OBTENER_LISTAS':
+        return ejecutarObtenerListas(datos);
       default:
         return responder({
           estado: 'error',
