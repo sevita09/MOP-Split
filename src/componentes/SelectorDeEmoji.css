@@ -1,0 +1,26 @@
+.emojis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.emojis__uno {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--borde);
+  background: var(--superficie-elevada);
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.emojis__uno:hover {
+  border-color: var(--borde-hover);
+}
+
+.emojis__uno--elegido {
+  border-color: var(--acento);
+  background: rgba(31, 111, 235, 0.18);
+}
