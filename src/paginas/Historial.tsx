@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import type { Concepto } from '../api/conceptos';
 import type { Gasto } from '../api/gastos';
 import type { Lista } from '../api/listas';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarGastos } from '../hooks/usarGastos';
+import { CorregirGasto } from '../componentes/CorregirGasto';
 import { formatearNumero } from '../utiles/monto';
 import { nombreDelPeriodo } from '../utiles/meses';
 import './Historial.css';
@@ -19,7 +21,8 @@ interface Props {
 const FECHA_CORTA = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short' });
 
 export function Historial({ credenciales, lista, conceptos, personas, alVolver }: Props) {
-  const { gastos, cargando, error } = usarGastos(credenciales, lista.id);
+  const { gastos, cargando, error, recargar } = usarGastos(credenciales, lista.id);
+  const [corrigiendo, setCorrigiendo] = useState<Gasto | null>(null);
 
   const porConcepto = new Map(conceptos.map((uno) => [uno.id, uno]));
   const nombrePorPersona = new Map(personas.map((una) => [una.codigo, una.nombre]));
@@ -70,11 +73,39 @@ export function Historial({ credenciales, lista, conceptos, personas, alVolver }
                   {FECHA_CORTA.format(new Date(gasto.fecha))} · pagó {quien}
                 </span>
               </div>
-              <span className="gasto__monto numero">{formatearNumero(gasto.monto)}</span>
+              <div className="gasto__derecha">
+                <span className="gasto__monto numero">{formatearNumero(gasto.monto)}</span>
+
+                {gasto.puedeEditarlo && lista.estado === 'Abierta' && (
+                  <button
+                    type="button"
+                    className="gasto__accion"
+                    title="Corregir el monto"
+                    aria-label={`Corregir el monto de ${nombre}`}
+                    onClick={() => setCorrigiendo(gasto)}
+                  >
+                    ✏️
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
+
+      {corrigiendo && (
+        <CorregirGasto
+          credenciales={credenciales}
+          gasto={corrigiendo}
+          nombreDelGasto={describir(corrigiendo).nombre}
+          emoji={describir(corrigiendo).emoji}
+          alGuardar={() => {
+            setCorrigiendo(null);
+            void recargar();
+          }}
+          alCerrar={() => setCorrigiendo(null)}
+        />
+      )}
     </div>
   );
 }

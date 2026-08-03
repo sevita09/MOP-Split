@@ -48,6 +48,20 @@ export async function obtenerGastos(
   return { ok: true, mensaje: respuesta.mensaje, datos: lista.filter(esGasto) };
 }
 
+/** Se manda solo lo que cambia: lo que no viaja, la planilla lo deja como está. */
+export async function editarGasto(
+  credenciales: Credenciales,
+  idGasto: string,
+  cambio: { monto?: number; descuento?: number },
+): Promise<Resultado<null>> {
+  const respuesta = await enviarEvento(credenciales, 'EDITAR_GASTO', {
+    idGasto,
+    ...cambio,
+  });
+
+  return { ok: respuesta.estado === 'ok', mensaje: respuesta.mensaje, datos: null };
+}
+
 export async function crearGasto(
   credenciales: Credenciales,
   gasto: GastoNuevo,
