@@ -1,0 +1,51 @@
+.punto-sync {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+/* Se lee en voz alta pero no ocupa lugar: el punto solo no alcanza para quien
+   no distingue verde de rojo. */
+.punto-sync__texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.punto-sync--quieto {
+  background: var(--texto-muy-atenuado);
+}
+
+.punto-sync--hablando {
+  background: var(--texto-atenuado);
+  box-shadow: 0 0 0 3px rgba(139, 148, 158, 0.16);
+  animation: latido 0.9s ease-in-out infinite;
+}
+
+.punto-sync--ok {
+  background: var(--positivo);
+  box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.16);
+}
+
+.punto-sync--falla {
+  background: var(--negativo);
+  box-shadow: 0 0 0 3px rgba(248, 81, 73, 0.16);
+}
+
+@keyframes latido {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.55;
+  }
+}

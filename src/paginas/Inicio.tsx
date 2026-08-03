@@ -4,9 +4,11 @@ import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarListas } from '../hooks/usarListas';
 import { usarConceptos } from '../hooks/usarConceptos';
+import { usarSincronizacion } from '../hooks/usarSincronizacion';
 import { MenuLateral } from '../componentes/MenuLateral';
 import { GrillaDeConceptos } from '../componentes/GrillaDeConceptos';
 import { CargarGasto } from '../componentes/CargarGasto';
+import { PuntoDeSincronizacion } from '../componentes/PuntoDeSincronizacion';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
 import './Inicio.css';
@@ -18,6 +20,7 @@ interface Props {
 }
 
 export function Inicio({ credenciales, persona, alSalir }: Props) {
+  const sincronizacion = usarSincronizacion();
   const {
     listas,
     cargando: cargandoListas,
@@ -99,6 +102,7 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
           )}
         </div>
         {persona.admin && <span className="inicio__etiqueta">Admin</span>}
+        <PuntoDeSincronizacion estado={sincronizacion} />
       </header>
 
       {!cargandoListas && errorListas === '' && listas.abiertas.length === 0 && (

@@ -36,6 +36,27 @@ export function fijarSesion(token: string | null) {
   tokenDeSesion = token;
 }
 
+/** Qué está pasando con la planilla, para poder mostrarlo. */
+export type EstadoDeSincronizacion = 'quieto' | 'hablando' | 'ok' | 'falla';
+
+let avisarSincronizacion: ((estado: EstadoDeSincronizacion) => void) | null = null;
+let pedidosEnVuelo = 0;
+
+/**
+ * Fija a quién avisarle cómo viene el diálogo con la planilla.
+ *
+ * Se cuenta acá adentro y no en cada pantalla porque este es el único lugar por
+ * donde pasan todos los pedidos: así ninguno puede quedar afuera del indicador
+ * por olvido. Se lleva la cuenta de los que están en vuelo, no un booleano: con
+ * dos pedidos superpuestos, el primero en terminar apagaría el aviso mientras
+ * el otro sigue.
+ */
+export function fijarAvisoDeSincronizacion(
+  avisar: ((estado: EstadoDeSincronizacion) => void) | null,
+) {
+  avisarSincronizacion = avisar;
+}
+
 let avisarSesionCaida: (() => void) | null = null;
 
 /**
@@ -53,15 +74,43 @@ export function fijarAlCaerLaSesion(avisar: (() => void) | null) {
 /**
  * Manda un evento al Web App y devuelve su respuesta ya parseada.
  *
- * Ojo con el Content-Type: `application/json` dispara una preflight OPTIONS y
- * Apps Script no la contesta, así que el pedido falla por CORS antes de salir.
- * Con `text/plain` el navegador lo trata como "simple request", no hay
- * preflight, y el JSON llega igual en `e.postData.contents`.
+ * Además de hablar con la planilla, avisa cómo viene: es el único punto por el
+ * que pasan todos los pedidos, así que ninguno puede quedar sin reflejarse en
+ * el indicador de sincronización.
  */
 export async function enviarEvento(
   credenciales: Credenciales,
   accion: string,
   datos: Record<string, unknown> = {},
+): Promise<RespuestaPlanilla> {
+  pedidosEnVuelo++;
+  avisarSincronizacion?.('hablando');
+
+  const respuesta = await hablarConLaPlanilla(credenciales, accion, datos);
+
+  pedidosEnVuelo--;
+
+  // Solo se cambia el estado cuando no queda ninguno en vuelo: si no, el
+  // primero en volver apagaría el aviso mientras otro sigue trabajando.
+  if (pedidosEnVuelo === 0) {
+    avisarSincronizacion?.(respuesta.estado === 'ok' ? 'ok' : 'falla');
+  }
+
+  if (respuesta.codigo === 'SIN_SESION') avisarSesionCaida?.();
+
+  return respuesta;
+}
+
+/**
+ * Ojo con el Content-Type: `application/json` dispara una preflight OPTIONS y
+ * Apps Script no la contesta, así que el pedido falla por CORS antes de salir.
+ * Con `text/plain` el navegador lo trata como "simple request", no hay
+ * preflight, y el JSON llega igual en `e.postData.contents`.
+ */
+async function hablarConLaPlanilla(
+  credenciales: Credenciales,
+  accion: string,
+  datos: Record<string, unknown>,
 ): Promise<RespuestaPlanilla> {
   let respuesta: Response;
 
@@ -94,11 +143,7 @@ export async function enviarEvento(
   const cuerpo = await respuesta.text();
 
   try {
-    const respuestaPlanilla = JSON.parse(cuerpo) as RespuestaPlanilla;
-
-    if (respuestaPlanilla.codigo === 'SIN_SESION') avisarSesionCaida?.();
-
-    return respuestaPlanilla;
+    return JSON.parse(cuerpo) as RespuestaPlanilla;
   } catch {
     // Apps Script devuelve HTML cuando el despliegue no da acceso a cualquiera
     // o cuando la URL apunta al editor en vez de al Web App publicado.
