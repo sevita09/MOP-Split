@@ -72,6 +72,24 @@ export function fijarAlCaerLaSesion(avisar: (() => void) | null) {
 }
 
 /**
+ * Cambia los errores que la planilla no puede explicar bien.
+ *
+ * "Acción desconocida" solo aparece cuando el `.gs` publicado es más viejo que
+ * la app y no conoce ese evento. La planilla no tiene forma de saber eso —desde
+ * su lado el pedido es sencillamente inválido—, así que la traducción va acá.
+ */
+function traducir(respuesta: RespuestaPlanilla): RespuestaPlanilla {
+  if (!respuesta.mensaje?.startsWith('Acción desconocida')) return respuesta;
+
+  return {
+    ...respuesta,
+    mensaje:
+      'La planilla tiene una versión vieja del código. Actualizá los archivos ' +
+      'en Apps Script y creá una versión nueva de la implementación.',
+  };
+}
+
+/**
  * Manda un evento al Web App y devuelve su respuesta ya parseada.
  *
  * Además de hablar con la planilla, avisa cómo viene: es el único punto por el
@@ -143,7 +161,7 @@ async function hablarConLaPlanilla(
   const cuerpo = await respuesta.text();
 
   try {
-    return JSON.parse(cuerpo) as RespuestaPlanilla;
+    return traducir(JSON.parse(cuerpo) as RespuestaPlanilla);
   } catch {
     // Apps Script devuelve HTML cuando el despliegue no da acceso a cualquiera
     // o cuando la URL apunta al editor en vez de al Web App publicado.
