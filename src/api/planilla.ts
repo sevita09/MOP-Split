@@ -17,6 +17,21 @@ export interface RespuestaPlanilla {
   datos?: unknown;
 }
 
+let codigoDeQuienUsaLaApp: string | null = null;
+
+/**
+ * Fija quién está usando la app, para que viaje en cada pedido.
+ *
+ * Vive acá arriba y no como parámetro de `enviarEvento` porque es transversal a
+ * todas las operaciones, igual que una cabecera de autenticación: si fuera
+ * parámetro habría que arrastrarlo por cada función de cada módulo de `api/`.
+ * Desde v3 la planilla lo va a necesitar para saber quién carga o edita un
+ * gasto.
+ */
+export function fijarQuienUsaLaApp(codigo: string | null) {
+  codigoDeQuienUsaLaApp = codigo;
+}
+
 /**
  * Manda un evento al Web App y devuelve su respuesta ya parseada.
  *
@@ -36,7 +51,12 @@ export async function enviarEvento(
     respuesta = await fetch(credenciales.url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ accion, token: credenciales.token, ...datos }),
+      body: JSON.stringify({
+        accion,
+        token: credenciales.token,
+        usuario: codigoDeQuienUsaLaApp,
+        ...datos,
+      }),
       redirect: 'follow',
     });
   } catch {
