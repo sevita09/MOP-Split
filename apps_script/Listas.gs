@@ -201,6 +201,65 @@ function ejecutarCrearLista(datos, quien) {
 }
 
 /**
+ * Cierra o reabre una lista.
+ *
+ * Solo el dueño o el administrador. La comprobación vive acá y no en la app:
+ * esconder el botón es comodidad, lo que impide cerrar una lista ajena es esto.
+ *
+ * Al cerrar se congela el balance; al reabrir se borra esa foto y vuelve a
+ * calcularse en vivo hasta el próximo cierre.
+ */
+function ejecutarCambiarEstadoDeLista(datos, quien) {
+  const idLista = String(datos.idLista || '').trim();
+  const cerrar = datos.cerrar === true;
+
+  const hoja = obtenerHoja(HOJA_LISTAS, COLUMNAS_LISTAS);
+  const filas = hoja.getDataRange().getValues();
+
+  // Se busca por ID y no por posición: `leerListas` descarta las filas vacías,
+  // así que un renglón en blanco correría los índices y se tocaría otra lista.
+  let fila = -1;
+  for (let indice = 1; indice < filas.length; indice++) {
+    if (String(filas[indice][0]).trim() === idLista) {
+      fila = indice + 1;
+      break;
+    }
+  }
+
+  if (fila === -1) {
+    return responder({ estado: 'error', mensaje: 'No existe esa lista.' });
+  }
+
+  const dueño = String(filas[fila - 1][5]).trim();
+  const estadoActual = String(filas[fila - 1][4]).trim();
+
+  if (!quien.admin && dueño !== quien.codigo) {
+    return responder({
+      estado: 'error',
+      mensaje: 'Solo quien creó la lista puede cerrarla o reabrirla.',
+    });
+  }
+
+  const estadoNuevo = cerrar ? ESTADO_CERRADA : ESTADO_ABIERTA;
+
+  if (estadoActual === estadoNuevo) {
+    return responder({ estado: 'ok', mensaje: 'La lista ya estaba así.' });
+  }
+
+  // Primero se borra siempre la foto anterior: si una lista se cierra dos veces
+  // seguidas por un reintento, no tienen que quedar dos fotos superpuestas.
+  borrarBalanceDeCierre(idLista);
+  if (cerrar) guardarBalanceDeCierre(idLista);
+
+  hoja.getRange(fila, 5).setValue(estadoNuevo);
+
+  return responder({
+    estado: 'ok',
+    mensaje: cerrar ? 'Lista cerrada.' : 'Lista reabierta.',
+  });
+}
+
+/**
  * Las listas donde participa una persona, separadas por estado.
  *
  * Se devuelven los participantes de cada lista junto con la lista misma: la app
