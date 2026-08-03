@@ -12,6 +12,7 @@ interface Props {
   alCerrar: () => void;
   alCrearLista: () => void;
   alSalir: () => void;
+  alDesconectar: () => void;
 }
 
 /**
@@ -30,6 +31,7 @@ export function MenuLateral({
   alCerrar,
   alCrearLista,
   alSalir,
+  alDesconectar,
 }: Props) {
   // Las cerradas arrancan plegadas: son historial, se consultan de vez en
   // cuando, y desplegadas empujarían las abiertas fuera de la pantalla.
@@ -109,6 +111,13 @@ export function MenuLateral({
           </button>
           <button type="button" className="menu__enlace menu__enlace--apagado" onClick={alSalir}>
             Salir
+          </button>
+          <button
+            type="button"
+            className="menu__enlace menu__enlace--apagado"
+            onClick={alDesconectar}
+          >
+            Conectar otra planilla
           </button>
         </div>
       </nav>

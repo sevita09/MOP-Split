@@ -20,9 +20,10 @@ interface Props {
   credenciales: Credenciales;
   persona: Persona;
   alSalir: () => void;
+  alDesconectar: () => void;
 }
 
-export function Inicio({ credenciales, persona, alSalir }: Props) {
+export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props) {
   const sincronizacion = usarSincronizacion();
   const {
     listas,
@@ -103,6 +104,7 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
           setCreando(true);
         }}
         alSalir={alSalir}
+        alDesconectar={alDesconectar}
       />
 
       <header className="inicio__barra">

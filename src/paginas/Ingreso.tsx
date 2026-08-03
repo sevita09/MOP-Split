@@ -9,6 +9,7 @@ import './Ingreso.css';
 interface Props {
   credenciales: Credenciales;
   alIngresar: (sesion: Sesion) => void;
+  alDesconectar: () => void;
 }
 
 /** Iniciales para el círculo: "Ana" → A, "Juan Pablo" → JP. */
@@ -21,7 +22,7 @@ function iniciales(nombre: string) {
     .join('');
 }
 
-export function Ingreso({ credenciales, alIngresar }: Props) {
+export function Ingreso({ credenciales, alIngresar, alDesconectar }: Props) {
   const { personas, cargando, error, recargar } = usarPersonas(credenciales);
   const [elegida, setElegida] = useState<Persona | null>(null);
 
@@ -48,8 +49,17 @@ export function Ingreso({ credenciales, alIngresar }: Props) {
     return (
       <div className="ingreso">
         <p className="aviso aviso--error">✕ {error}</p>
-        <button type="button" className="boton boton--secundario" onClick={() => void recargar()}>
+        <button
+          type="button"
+          className="boton boton--secundario"
+          onClick={() => void recargar()}
+        >
           Reintentar
+        </button>
+        {/* La salida del callejón: reintentar contra una planilla que ya no
+            sirve falla siempre, y sin esto no habría cómo cambiarla. */}
+        <button type="button" className="boton boton--secundario" onClick={alDesconectar}>
+          Conectar otra planilla
         </button>
       </div>
     );
