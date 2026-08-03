@@ -29,6 +29,13 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
 
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [creando, setCreando] = useState(false);
+  const [idElegida, setIdElegida] = useState<string | null>(null);
+
+  const todas = [...listas.abiertas, ...listas.cerradas];
+  // Sin elección explícita se muestra la primera abierta. El `?? null` importa
+  // cuando la lista elegida desaparece —se cerró desde otro celular— para no
+  // quedar mostrando el encabezado de algo que ya no está.
+  const activa = todas.find((lista) => lista.id === idElegida) ?? listas.abiertas[0] ?? null;
 
   if (creando) {
     return (
@@ -50,8 +57,11 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
         abierto={menuAbierto}
         abiertas={listas.abiertas}
         cerradas={listas.cerradas}
-        idActiva={null}
-        alElegir={() => setMenuAbierto(false)}
+        idActiva={activa?.id ?? null}
+        alElegir={(id) => {
+          setIdElegida(id);
+          setMenuAbierto(false);
+        }}
         alCerrar={() => setMenuAbierto(false)}
         alCrearLista={() => {
           setMenuAbierto(false);
@@ -71,24 +81,26 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
         </button>
         <div className="inicio__titulo">
           <h1>Hola, {persona.nombre}</h1>
-          {persona.admin && <span className="inicio__etiqueta">Admin</span>}
+          {activa && (
+            <p className="inicio__subtitulo">
+              {activa.nombre} · {nombreDelPeriodo(activa.mes, activa.anio)}
+              {activa.estado === 'Cerrada' && ' · cerrada'}
+            </p>
+          )}
         </div>
+        {persona.admin && <span className="inicio__etiqueta">Admin</span>}
       </header>
 
       <div className="inicio__cuerpo">
         <section className="inicio__bloque">
-          <h2>Listas</h2>
+          <h2>Lista activa</h2>
           {cargandoListas && <p className="inicio__nota">Cargando…</p>}
           {errorListas !== '' && <p className="aviso aviso--error">✕ {errorListas}</p>}
-          {!cargandoListas && errorListas === '' && (
-            <ul className="inicio__lista">
-              {[...listas.abiertas, ...listas.cerradas].map((lista) => (
-                <li key={lista.id}>
-                  {lista.nombre} · {nombreDelPeriodo(lista.mes, lista.anio)} ·{' '}
-                  {lista.estado}
-                </li>
-              ))}
-            </ul>
+          {!cargandoListas && errorListas === '' && activa && (
+            <p className="inicio__nota">
+              {activa.participantes.length} participante(s)
+              {activa.esDueño && ' · sos el dueño'}
+            </p>
           )}
         </section>
 
