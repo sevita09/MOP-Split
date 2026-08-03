@@ -74,3 +74,22 @@ function leerConceptos() {
       };
     });
 }
+
+function ejecutarObtenerConceptos() {
+  const conceptos = leerConceptos().map(function (concepto) {
+    return {
+      id: concepto.id,
+      nombre: concepto.nombre,
+      emoji: concepto.emoji,
+      fijo: concepto.fijo,
+      // Ni `Categoria` ni `Subcategoria` salen de la planilla: solo si faltan.
+      sinCategorizar: concepto.categoria === '' || concepto.subcategoria === '',
+    };
+  });
+
+  return responder({
+    estado: 'ok',
+    mensaje: conceptos.length + ' concepto(s).',
+    datos: { conceptos: conceptos },
+  });
+}
