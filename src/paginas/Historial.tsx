@@ -5,6 +5,7 @@ import type { Lista } from '../api/listas';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
 import { usarGastos } from '../hooks/usarGastos';
+import { BalanceDeLista } from '../componentes/BalanceDeLista';
 import { CorregirGasto } from '../componentes/CorregirGasto';
 import type { Correccion } from '../componentes/CorregirGasto';
 import { formatearNumero } from '../utiles/monto';
@@ -48,7 +49,7 @@ export function Historial({ credenciales, lista, conceptos, personas, alVolver }
           ‹
         </button>
         <div>
-          <h1>Gastos</h1>
+          <h1>Balance</h1>
           <p className="historial__subtitulo">
             {lista.nombre} · {nombreDelPeriodo(lista.mes, lista.anio)}
           </p>
@@ -58,6 +59,14 @@ export function Historial({ credenciales, lista, conceptos, personas, alVolver }
       <div className="historial__cuerpo">
         {cargando && <p className="historial__nota">Cargando…</p>}
         {error !== '' && <p className="aviso aviso--error">✕ {error}</p>}
+
+        {!cargando && error === '' && (
+          <BalanceDeLista lista={lista} gastos={gastos} personas={personas} />
+        )}
+
+        {!cargando && error === '' && gastos.length > 0 && (
+          <h2 className="historial__rotulo">Gastos</h2>
+        )}
 
         {!cargando && error === '' && gastos.length === 0 && (
           <p className="historial__nota">Todavía no hay gastos en esta lista.</p>
