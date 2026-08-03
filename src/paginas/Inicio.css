@@ -1,27 +1,65 @@
 .inicio {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding: 40px 20px 48px;
-  max-width: 520px;
-  margin: 0 auto;
+  min-height: 100dvh;
 }
 
-.inicio__encabezado {
+.inicio__barra {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--borde-suave);
+  position: sticky;
+  top: 0;
+  background: var(--fondo);
+  z-index: 10;
 }
 
-.inicio__encabezado h1 {
+.inicio__menu {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto-secundario);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.inicio__menu:hover {
+  background: var(--superficie-elevada);
+  border-color: var(--borde-hover);
+}
+
+.inicio__titulo {
+  flex: 1;
+  min-width: 0;
+}
+
+.inicio__subtitulo {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--texto-atenuado);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inicio__titulo h1 {
   font-family: var(--tipografia-titulos);
-  font-size: 24px;
+  font-size: 19px;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .inicio__etiqueta {
+  flex-shrink: 0;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.4px;
@@ -30,6 +68,46 @@
   border: 1px solid var(--acento);
   border-radius: 999px;
   padding: 3px 9px;
+}
+
+/* Estado vacío: el botón va centrado en la pantalla, no escondido en el menú.
+   Es lo único que hay para hacer cuando no existe ninguna lista abierta. */
+.inicio__vacio {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.inicio__vacio-emoji {
+  font-size: 40px;
+}
+
+.inicio__vacio p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--texto-atenuado);
+  max-width: 34ch;
+}
+
+.inicio__cuerpo[hidden] {
+  display: none;
+}
+
+.inicio__cuerpo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 16px 48px;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .inicio__bloque {
