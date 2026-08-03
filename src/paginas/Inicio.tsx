@@ -9,6 +9,7 @@ import { MenuLateral } from '../componentes/MenuLateral';
 import { GrillaDeConceptos } from '../componentes/GrillaDeConceptos';
 import { CargarGasto } from '../componentes/CargarGasto';
 import { PuntoDeSincronizacion } from '../componentes/PuntoDeSincronizacion';
+import { Aviso } from '../componentes/Aviso';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
 import './Inicio.css';
@@ -34,6 +35,9 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
   // `'nuevo'` es el botón Otro: hay que cargar un gasto de algo que todavía
   // no está en el catálogo.
   const [cargaAbierta, setCargaAbierta] = useState<Concepto | 'nuevo' | null>(null);
+  // Se cuenta en vez de usar un booleano: cargar dos gastos seguidos tiene que
+  // volver a mostrar el aviso, y el texto es el mismo las dos veces.
+  const [gastosCargados, setGastosCargados] = useState(0);
 
   const todas = [...listas.abiertas, ...listas.cerradas];
   // Sin elección explícita se muestra la primera abierta. El `?? null` importa
@@ -159,12 +163,16 @@ export function Inicio({ credenciales, persona, alSalir }: Props) {
           idLista={activa.id}
           alCargar={() => {
             setCargaAbierta(null);
-            // Un concepto nuevo tiene que aparecer en la grilla enseguida.
+            setGastosCargados((previos) => previos + 1);
+            // Un concepto nuevo tiene que aparecer en la grilla enseguida, y el
+            // orden cambia porque este acaba de ser el último usado.
             void recargarConceptos();
           }}
           alCerrar={() => setCargaAbierta(null)}
         />
       )}
+
+      <Aviso texto="Gasto cargado" version={gastosCargados} />
     </div>
   );
 }
