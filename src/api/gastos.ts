@@ -15,7 +15,8 @@ export interface Gasto {
   monto: number;
   descuento: number;
   codigoPersonaPago: string;
-  fecha: number;
+  /** `null` si la celda de la planilla no se pudo interpretar como fecha. */
+  fecha: number | null;
   /** Lo decide la planilla: quien pagó, o el administrador. */
   puedeEditarlo: boolean;
 }
