@@ -13,6 +13,8 @@ interface Props {
   alCrearLista: () => void;
   alSalir: () => void;
   alDesconectar: () => void;
+  /** Solo el admin ve el diagnóstico: son números para quien mantiene esto. */
+  alVerDiagnostico: (() => void) | null;
 }
 
 /**
@@ -32,6 +34,7 @@ export function MenuLateral({
   alCrearLista,
   alSalir,
   alDesconectar,
+  alVerDiagnostico,
 }: Props) {
   // Las cerradas arrancan plegadas: son historial, se consultan de vez en
   // cuando, y desplegadas empujarían las abiertas fuera de la pantalla.
@@ -119,6 +122,15 @@ export function MenuLateral({
           >
             Conectar otra planilla
           </button>
+          {alVerDiagnostico && (
+            <button
+              type="button"
+              className="menu__enlace menu__enlace--apagado"
+              onClick={alVerDiagnostico}
+            >
+              Diagnóstico
+            </button>
+          )}
         </div>
       </nav>
     </>
