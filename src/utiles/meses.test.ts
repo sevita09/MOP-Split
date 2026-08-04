@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest';
-import { nombreDelMes, nombreDelPeriodo, NUMEROS_DE_MES } from './meses';
+import {
+  fechaConMesEnLetras,
+  nombreDelMes,
+  nombreDelPeriodo,
+  NUMEROS_DE_MES,
+} from './meses';
 
 describe('meses', () => {
   test('el mes uno es enero y el doce es diciembre', () => {
@@ -17,6 +22,13 @@ describe('meses', () => {
 
   test('el periodo se arma con el nombre y el año', () => {
     expect(nombreDelPeriodo(8, 2026)).toBe('Agosto 2026');
+  });
+
+  test('la fecha larga lleva el mes en letras y con mayuscula', () => {
+    // Se arma con la hora del mediodía para que el resultado no dependa del
+    // huso horario donde corran los tests.
+    const tresDeAgosto = new Date(2026, 7, 3, 12).getTime();
+    expect(fechaConMesEnLetras(tresDeAgosto)).toBe('3 Agosto 2026');
   });
 
   test('hay doce meses numerados de uno a doce', () => {

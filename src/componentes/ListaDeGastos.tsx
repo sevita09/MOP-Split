@@ -1,6 +1,7 @@
 import type { Concepto } from '../api/conceptos';
 import type { Gasto } from '../api/gastos';
 import type { Persona } from '../api/personas';
+import { fechaConMesEnLetras } from '../utiles/meses';
 import { formatearNumero } from '../utiles/monto';
 import type { Correccion } from './CorregirGasto';
 import './ListaDeGastos.css';
@@ -13,18 +14,14 @@ interface Props {
   alCorregir: ((gasto: Gasto, que: Correccion) => void) | null;
 }
 
-const FECHA_CORTA = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short' });
-
 /**
  * Una fecha que no se pudo leer se dice, no se inventa.
  *
  * Antes esto mostraba "31 dic" —el 1/1/1970 UTC visto desde acá— y parecía un
  * dato de verdad. Es peor que un hueco: manda a buscar el error donde no está.
  */
-function fechaCorta(momento: number | null) {
-  return momento === null || momento === 0
-    ? 'sin fecha'
-    : FECHA_CORTA.format(new Date(momento));
+function fechaDelGasto(momento: number | null) {
+  return momento === null || momento === 0 ? 'sin fecha' : fechaConMesEnLetras(momento);
 }
 
 export function ListaDeGastos({ gastos, conceptos, personas, alCorregir }: Props) {
@@ -60,7 +57,7 @@ export function ListaDeGastos({ gastos, conceptos, personas, alCorregir }: Props
                 {emoji} {nombre}
               </span>
               <span className="gasto__meta">
-                {fechaCorta(gasto.fecha)} · pagó {quien}
+                {fechaDelGasto(gasto.fecha)} · pagó {quien}
               </span>
             </div>
 
