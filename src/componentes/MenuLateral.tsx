@@ -132,7 +132,7 @@ export function MenuLateral({
           </button>
           <button
             type="button"
-            className="menu__enlace"
+            className="menu__enlace menu__enlace--apagado"
             onClick={() => void copiarCodigoFamiliar()}
           >
             {copiado ? '✓ Código copiado' : 'Compartir código familiar'}
