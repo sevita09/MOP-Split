@@ -26,3 +26,15 @@ export function nombreDelPeriodo(mes: number, anio: number): string {
   const nombre = nombreDelMes(mes);
   return nombre === '' ? String(anio) : `${nombre} ${anio}`;
 }
+
+/**
+ * "3 Agosto 2026".
+ *
+ * A mano y no con `Intl`: el formato largo en castellano da "3 de agosto de
+ * 2026", con los "de" y el mes en minúscula. Acá se quiere el mes suelto y con
+ * mayúscula, igual que en el resto de la app.
+ */
+export function fechaConMesEnLetras(momento: number): string {
+  const fecha = new Date(momento);
+  return `${fecha.getDate()} ${nombreDelMes(fecha.getMonth() + 1)} ${fecha.getFullYear()}`;
+}
