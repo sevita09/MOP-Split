@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { Concepto } from '../api/conceptos';
-import { crearConcepto } from '../api/conceptos';
 import { crearGasto } from '../api/gastos';
 import type { Lista } from '../api/listas';
 import type { Credenciales } from '../api/planilla';
@@ -50,9 +49,6 @@ export function CargarGasto({
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
-  // Si el concepto se creó pero el gasto falló, se recuerda su id: al
-  // reintentar hay que cargar el gasto, no crear el concepto de nuevo.
-  const [idYaCreado, setIdYaCreado] = useState<string | null>(null);
 
   // Cuando la lista se cerró mientras cargabas, se ofrecen las abiertas en vez
   // de perder lo escrito. El monto queda intacto.
@@ -65,31 +61,16 @@ export function CargarGasto({
     setGuardando(true);
     setError('');
 
-    let idConcepto = concepto?.id ?? idYaCreado;
-
-    if (idConcepto === null || idConcepto === undefined) {
-      const creado = await crearConcepto(credenciales, nombre.trim());
-
-      if (!creado.ok || !creado.datos) {
-        setGuardando(false);
-        setError(creado.mensaje);
-        return;
-      }
-
-      idConcepto = creado.datos.id;
-      setIdYaCreado(idConcepto);
-    }
-
     const resultado = await crearGasto(credenciales, {
       idLista: aDondeVa,
-      idConcepto,
       monto: aNumero(monto),
+      ...(esNuevo ? { conceptoNuevo: nombre.trim() } : { idConcepto: concepto.id }),
     });
 
     setGuardando(false);
 
-    if (resultado.ok) {
-      alCargar(idConcepto);
+    if (resultado.ok && resultado.datos !== null) {
+      alCargar(resultado.datos);
       return;
     }
 
@@ -101,11 +82,7 @@ export function CargarGasto({
 
     // El monto queda escrito a propósito: reintentar tiene que ser un toque,
     // no volver a teclear todo.
-    setError(
-      esNuevo && idYaCreado === null
-        ? `${resultado.mensaje} El gasto no se guardó — el concepto ya quedó creado, así que tocá otra vez "Cargar gasto".`
-        : `${resultado.mensaje} El gasto no se guardó, probá de nuevo.`,
-    );
+    setError(`${resultado.mensaje} El gasto no se guardó, probá de nuevo.`);
   }
 
   return (
@@ -140,7 +117,6 @@ export function CargarGasto({
                 autoCapitalize="sentences"
                 placeholder="Verdulería, peluquería…"
                 value={nombre}
-                disabled={idYaCreado !== null}
                 onChange={(evento) => {
                   setNombre(evento.target.value);
                   setError('');
