@@ -10,8 +10,22 @@ const COLUMNAS_LISTAS = ['ID_Lista', 'Nombre', 'Mes', 'Año', 'Estado', 'Dueño'
 const ESTADO_ABIERTA = 'Abierta';
 const ESTADO_CERRADA = 'Cerrada';
 
+/**
+ * La columna de nombres va forzada a texto.
+ *
+ * Sheets adivina el tipo de lo que se escribe: un nombre como "Agosto - 26" lo
+ * toma por una fecha, lo convierte, y desde ahí deja de decir lo que la persona
+ * escribió. El formato hay que ponerlo **antes** de escribir la fila; después
+ * ya no hay nada que recuperar.
+ */
+function obtenerHojaListas() {
+  const hoja = obtenerHoja(HOJA_LISTAS, COLUMNAS_LISTAS);
+  hoja.getRange('B2:B').setNumberFormat('@');
+  return hoja;
+}
+
 function leerListas() {
-  const filas = obtenerHoja(HOJA_LISTAS, COLUMNAS_LISTAS).getDataRange().getValues();
+  const filas = obtenerHojaListas().getDataRange().getValues();
   filas.shift();
 
   return filas
@@ -121,7 +135,7 @@ function ejecutarCrearLista(datos, quien) {
   }
 
   const id = generarIdLista(leerListas());
-  obtenerHoja(HOJA_LISTAS, COLUMNAS_LISTAS).appendRow([
+  obtenerHojaListas().appendRow([
     id,
     nombre,
     mes,
@@ -156,7 +170,7 @@ function ejecutarCambiarEstadoDeLista(datos, quien) {
   const idLista = String(datos.idLista || '').trim();
   const cerrar = datos.cerrar === true;
 
-  const hoja = obtenerHoja(HOJA_LISTAS, COLUMNAS_LISTAS);
+  const hoja = obtenerHojaListas();
   const filas = hoja.getDataRange().getValues();
 
   // Se busca por ID y no por posición: `leerListas` descarta las filas vacías,

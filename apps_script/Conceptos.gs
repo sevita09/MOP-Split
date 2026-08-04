@@ -38,6 +38,8 @@ function obtenerHojaConceptos() {
   const libro = SpreadsheetApp.getActiveSpreadsheet();
   const existiaAntes = libro.getSheetByName(HOJA_CONCEPTOS) !== null;
   const hoja = obtenerHoja(HOJA_CONCEPTOS, COLUMNAS_CONCEPTOS);
+  // Mismo motivo que en Listas: un concepto llamado "Enero 25" no es una fecha.
+  hoja.getRange('B2:B').setNumberFormat('@');
 
   if (!existiaAntes) {
     CONCEPTOS_INICIALES.forEach(function (inicial, indice) {
@@ -163,7 +165,11 @@ function ejecutarObtenerConceptos(datos) {
 
     if (idLista === '' || gasto.idLista !== idLista) return;
 
-    const momento = gasto.fecha instanceof Date ? gasto.fecha.getTime() : 0;
+    // Mismo criterio que en Gastos.gs: una celda ilegible no vale cero, que
+    // acá pondría el concepto al fondo del orden como si fuera viejísimo.
+    const momento = comoMomento(gasto.fecha);
+    if (momento === null) return;
+
     if (!ultimoUsoEnLista[gasto.idConcepto] || momento > ultimoUsoEnLista[gasto.idConcepto]) {
       ultimoUsoEnLista[gasto.idConcepto] = momento;
     }
