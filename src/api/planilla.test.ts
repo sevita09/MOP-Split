@@ -3,6 +3,8 @@ import {
   enviarEvento,
   fijarAlCaerLaSesion,
   fijarSesion,
+  medicionesRecientes,
+  olvidarMediciones,
 } from './planilla';
 
 const CREDENCIALES = { url: 'https://script.google.com/macros/s/x/exec', token: 'clave' };
@@ -89,5 +91,43 @@ describe('enviarEvento', () => {
 
     expect(respuesta.estado).toBe('error');
     expect(respuesta.mensaje).toContain('/exec');
+  });
+});
+
+describe('mediciones', () => {
+  test('guarda cuanto tardo cada pedido', async () => {
+    planillaQueResponde({ estado: 'ok', mensaje: 'listo' });
+    olvidarMediciones();
+
+    await enviarEvento(CREDENCIALES, 'OBTENER_LISTAS');
+
+    const [ultima] = medicionesRecientes();
+    expect(ultima.accion).toBe('OBTENER_LISTAS');
+    expect(ultima.ok).toBe(true);
+    expect(ultima.milisegundos).toBeGreaterThanOrEqual(0);
+  });
+
+  test('la mas reciente queda primera', async () => {
+    planillaQueResponde({ estado: 'ok', mensaje: 'listo' });
+    olvidarMediciones();
+
+    await enviarEvento(CREDENCIALES, 'PRIMERA');
+    await enviarEvento(CREDENCIALES, 'SEGUNDA');
+
+    expect(medicionesRecientes().map((una) => una.accion)).toEqual([
+      'SEGUNDA',
+      'PRIMERA',
+    ]);
+  });
+
+  test('tambien registra los pedidos que fallan', async () => {
+    // Un pedido que falla rápido y uno que falla lento se diagnostican
+    // distinto: perder los fallidos escondería justo el caso raro.
+    planillaQueResponde({ estado: 'error', mensaje: 'algo salió mal' });
+    olvidarMediciones();
+
+    await enviarEvento(CREDENCIALES, 'CREAR_GASTO');
+
+    expect(medicionesRecientes()[0].ok).toBe(false);
   });
 });

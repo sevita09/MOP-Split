@@ -57,6 +57,27 @@ export function fijarAvisoDeSincronizacion(
   avisarSincronizacion = avisar;
 }
 
+/** Cuánto tardó un pedido, para poder medir en el celular y no de oído. */
+export interface Medicion {
+  accion: string;
+  milisegundos: number;
+  cuando: number;
+  ok: boolean;
+}
+
+/** Alcanza para ver un patrón sin que la lista crezca sin control. */
+const MEDICIONES_QUE_SE_GUARDAN = 40;
+
+const mediciones: Medicion[] = [];
+
+export function medicionesRecientes(): Medicion[] {
+  return [...mediciones];
+}
+
+export function olvidarMediciones() {
+  mediciones.length = 0;
+}
+
 let avisarSesionCaida: (() => void) | null = null;
 
 /**
@@ -104,7 +125,18 @@ export async function enviarEvento(
   pedidosEnVuelo++;
   avisarSincronizacion?.('hablando');
 
+  // `performance.now` y no `Date.now`: no lo afecta que el reloj del sistema se
+  // ajuste en el medio, que es justo cuando la medición saldría absurda.
+  const arranque = performance.now();
   const respuesta = await hablarConLaPlanilla(credenciales, accion, datos);
+
+  mediciones.unshift({
+    accion,
+    milisegundos: Math.round(performance.now() - arranque),
+    cuando: Date.now(),
+    ok: respuesta.estado === 'ok',
+  });
+  mediciones.length = Math.min(mediciones.length, MEDICIONES_QUE_SE_GUARDAN);
 
   pedidosEnVuelo--;
 
