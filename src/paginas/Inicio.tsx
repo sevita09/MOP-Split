@@ -104,6 +104,7 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
     <div className="inicio">
       <MenuLateral
         abierto={menuAbierto}
+        credenciales={credenciales}
         abiertas={listas.abiertas}
         cerradas={listas.cerradas}
         idActiva={activa?.id ?? null}
