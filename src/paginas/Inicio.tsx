@@ -14,6 +14,7 @@ import { Aviso } from '../componentes/Aviso';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
 import { Historial } from './Historial';
+import { Diagnostico } from './Diagnostico';
 import './Inicio.css';
 
 interface Props {
@@ -42,6 +43,7 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
   // volver a mostrar el aviso, y el texto es el mismo las dos veces.
   const [gastosCargados, setGastosCargados] = useState(0);
   const [viendoGastos, setViendoGastos] = useState(false);
+  const [viendoDiagnostico, setViendoDiagnostico] = useState(false);
 
   const todas = [...listas.abiertas, ...listas.cerradas];
   // Sin elección explícita se muestra la primera abierta. El `?? null` importa
@@ -59,6 +61,16 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
     marcarUsado,
   } = usarConceptos(credenciales, activa?.id ?? '');
   const { personas } = usarPersonas(credenciales);
+
+  if (viendoDiagnostico) {
+    return (
+      <Diagnostico
+        credenciales={credenciales}
+        idLista={activa?.id ?? ''}
+        alVolver={() => setViendoDiagnostico(false)}
+      />
+    );
+  }
 
   if (viendoGastos && activa) {
     return (
@@ -106,6 +118,14 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
         }}
         alSalir={alSalir}
         alDesconectar={alDesconectar}
+        alVerDiagnostico={
+          persona.admin
+            ? () => {
+                setMenuAbierto(false);
+                setViendoDiagnostico(true);
+              }
+            : null
+        }
       />
 
       <header className="inicio__barra">
