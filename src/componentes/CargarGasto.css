@@ -80,3 +80,9 @@
   line-height: 1.5;
   color: var(--texto-atenuado);
 }
+
+.cargar__otra-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { fijarSesion } from '../api/planilla';
+import { fijarDuenoDelCache, olvidarTodo } from '../utiles/cacheLocal';
 import type { Persona, Sesion } from '../api/personas';
 
 const CLAVE_ALMACENAMIENTO = 'split-familiar:sesion';
@@ -48,32 +49,37 @@ function leerDelAlmacenamiento(): Sesion | null {
 }
 
 /**
- * El token se avisa a la capa de red **acá y no en un efecto**.
+ * El token y el dueño del caché se avisan **acá y no en un efecto**.
  *
  * React corre los efectos de los hijos antes que los del padre. Si esto viviera
  * en un `useEffect` de `App`, las pantallas hijas ya habrían pedido sus datos
  * con el token todavía en `null`: la planilla contestaría `SIN_SESION`, la app
  * cerraría la sesión sola y el ingreso quedaría dando vueltas para siempre.
  *
- * Fijarlo al leer y al cambiar garantiza que ya esté puesto antes de que
- * cualquier pantalla llegue a pedir nada.
+ * Fijarlos al leer y al cambiar garantiza que ya estén puestos antes de que
+ * cualquier pantalla llegue a pedir nada ni a leer el caché.
  */
 export function usarSesion() {
   const [sesion, setSesion] = useState<Sesion | null>(() => {
     const guardada = leerDelAlmacenamiento();
     fijarSesion(guardada?.token ?? null);
+    fijarDuenoDelCache(guardada?.persona.codigo ?? '');
     return guardada;
   });
 
   const ingresar = useCallback((nueva: Sesion) => {
     localStorage.setItem(CLAVE_ALMACENAMIENTO, JSON.stringify(nueva));
     fijarSesion(nueva.token);
+    fijarDuenoDelCache(nueva.persona.codigo);
     setSesion(nueva);
   }, []);
 
   const salir = useCallback(() => {
     localStorage.removeItem(CLAVE_ALMACENAMIENTO);
     fijarSesion(null);
+    // Se borra al salir: si presta el celular, el que entra no ve nada de antes.
+    olvidarTodo();
+    fijarDuenoDelCache('');
     setSesion(null);
   }, []);
 

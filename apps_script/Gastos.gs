@@ -249,7 +249,6 @@ function ejecutarObtenerGastos(datos, quien) {
  */
 function ejecutarCrearGasto(datos, quien) {
   const idLista = String(datos.idLista || '').trim();
-  const idConcepto = String(datos.idConcepto || '').trim();
   const monto = Number(datos.monto);
 
   if (!(monto > 0)) {
@@ -265,9 +264,12 @@ function ejecutarCrearGasto(datos, quien) {
   }
 
   if (lista.estado !== ESTADO_ABIERTA) {
+    // Con código y no solo con texto: la app ofrece elegir otra lista cuando
+    // pasa esto, y reconocerlo por el mensaje se rompería al reescribirlo.
     return responder({
       estado: 'error',
-      mensaje: 'La lista está cerrada: no se le pueden cargar gastos.',
+      codigo: 'LISTA_CERRADA',
+      mensaje: 'Esa lista se cerró mientras cargabas el gasto.',
     });
   }
 
@@ -279,12 +281,24 @@ function ejecutarCrearGasto(datos, quien) {
     return responder({ estado: 'error', mensaje: 'No participás de esa lista.' });
   }
 
-  const existeElConcepto = leerConceptos().some(function (concepto) {
-    return concepto.id === idConcepto;
-  });
+  // Si viene un nombre en vez de un identificador, el concepto se crea acá
+  // mismo. Antes eran dos pedidos encadenados y el doble de espera.
+  let idConcepto = String(datos.idConcepto || '').trim();
 
-  if (!existeElConcepto) {
-    return responder({ estado: 'error', mensaje: 'No existe ese concepto.' });
+  if (idConcepto === '') {
+    const creado = crearOReusarConcepto(datos.conceptoNuevo, '');
+    if (creado === null) {
+      return responder({ estado: 'error', mensaje: 'Falta el nombre del gasto.' });
+    }
+    idConcepto = creado.id;
+  } else {
+    const existeElConcepto = leerConceptos().some(function (concepto) {
+      return concepto.id === idConcepto;
+    });
+
+    if (!existeElConcepto) {
+      return responder({ estado: 'error', mensaje: 'No existe ese concepto.' });
+    }
   }
 
   const id = generarIdGasto(leerGastos());
@@ -298,5 +312,9 @@ function ejecutarCrearGasto(datos, quien) {
     0,
   ]);
 
-  return responder({ estado: 'ok', mensaje: 'Gasto cargado.', datos: { id: id } });
+  return responder({
+    estado: 'ok',
+    mensaje: 'Gasto cargado.',
+    datos: { id: id, idConcepto: idConcepto },
+  });
 }

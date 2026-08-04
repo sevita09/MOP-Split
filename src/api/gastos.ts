@@ -23,8 +23,10 @@ export interface Gasto {
 
 export interface GastoNuevo {
   idLista: string;
-  idConcepto: string;
   monto: number;
+  /** Uno de los dos: el concepto del catálogo, o el nombre de uno que no está. */
+  idConcepto?: string;
+  conceptoNuevo?: string;
 }
 
 function esGasto(valor: unknown): valor is Gasto {
@@ -63,11 +65,26 @@ export async function editarGasto(
   return { ok: respuesta.estado === 'ok', mensaje: respuesta.mensaje, datos: null };
 }
 
+/**
+ * Carga el gasto y, si el concepto no existía, lo crea en el mismo pedido.
+ *
+ * Antes eran dos llamadas encadenadas —crear el concepto, después el gasto— y
+ * cada viaje a Apps Script cuesta unos 3,8 segundos: casi ocho de espera para
+ * cargar algo que no estaba en el catálogo. Devuelve el identificador del
+ * concepto usado, que la app necesita para reordenar la grilla.
+ */
 export async function crearGasto(
   credenciales: Credenciales,
   gasto: GastoNuevo,
-): Promise<Resultado<null>> {
+): Promise<Resultado<string>> {
   const respuesta = await enviarEvento(credenciales, 'CREAR_GASTO', { ...gasto });
 
-  return { ok: respuesta.estado === 'ok', mensaje: respuesta.mensaje, datos: null };
+  const contenido = respuesta.datos as { idConcepto?: unknown } | undefined;
+
+  return {
+    ok: respuesta.estado === 'ok',
+    mensaje: respuesta.mensaje,
+    codigo: respuesta.codigo,
+    datos: typeof contenido?.idConcepto === 'string' ? contenido.idConcepto : null,
+  };
 }

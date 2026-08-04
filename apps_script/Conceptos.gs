@@ -107,12 +107,31 @@ function normalizarNombre(nombre) {
  * conceptos iguales, que después dividirían el historial en dos.
  */
 function ejecutarCrearConcepto(datos) {
-  const nombre = String(datos.nombre || '').trim();
-  const emoji = String(datos.emoji || '').trim() || '🧾';
+  const concepto = crearOReusarConcepto(datos.nombre, datos.emoji);
 
-  if (nombre === '') {
+  if (concepto === null) {
     return responder({ estado: 'error', mensaje: 'Falta el nombre del gasto.' });
   }
+
+  return responder({
+    estado: 'ok',
+    mensaje: 'Concepto "' + concepto.nombre + '" listo.',
+    datos: { concepto: concepto },
+  });
+}
+
+/**
+ * Devuelve el concepto, creándolo si no estaba. `null` si falta el nombre.
+ *
+ * Está separado del evento para que `CREAR_GASTO` lo use también: cargar un
+ * gasto de algo nuevo era dos viajes a la planilla, casi ocho segundos de
+ * espera, y con esto es uno.
+ */
+function crearOReusarConcepto(nombreCrudo, emojiCrudo) {
+  const nombre = String(nombreCrudo || '').trim();
+  const emoji = String(emojiCrudo || '').trim() || '🧾';
+
+  if (nombre === '') return null;
 
   const existentes = leerConceptos();
   const repetido = existentes.filter(function (concepto) {
@@ -120,31 +139,19 @@ function ejecutarCrearConcepto(datos) {
   })[0];
 
   if (repetido) {
-    return responder({
-      estado: 'ok',
-      mensaje: 'Ya existía "' + repetido.nombre + '".',
-      datos: {
-        concepto: {
-          id: repetido.id,
-          nombre: repetido.nombre,
-          emoji: repetido.emoji,
-          fijo: repetido.fijo,
-          sinCategorizar: repetido.categoria === '' || repetido.subcategoria === '',
-        },
-      },
-    });
+    return {
+      id: repetido.id,
+      nombre: repetido.nombre,
+      emoji: repetido.emoji,
+      fijo: repetido.fijo,
+      sinCategorizar: repetido.categoria === '' || repetido.subcategoria === '',
+    };
   }
 
   const id = generarIdConcepto(existentes);
   obtenerHojaConceptos().appendRow([id, nombre, emoji, 'NO', '', '']);
 
-  return responder({
-    estado: 'ok',
-    mensaje: 'Concepto "' + nombre + '" creado.',
-    datos: {
-      concepto: { id: id, nombre: nombre, emoji: emoji, fijo: false, sinCategorizar: true },
-    },
-  });
+  return { id: id, nombre: nombre, emoji: emoji, fijo: false, sinCategorizar: true };
 }
 
 /**

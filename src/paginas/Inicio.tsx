@@ -103,6 +103,7 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
       <CrearLista
         credenciales={credenciales}
         persona={persona}
+        personas={personas}
         alCrear={() => {
           setCreando(false);
           void recargarListas();
@@ -243,6 +244,7 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
           credenciales={credenciales}
           concepto={cargaAbierta === 'nuevo' ? null : cargaAbierta}
           idLista={activa.id}
+          listasAbiertas={listas.abiertas}
           alCargar={(idConcepto) => {
             setCargaAbierta(null);
             setGastosCargados((previos) => previos + 1);
