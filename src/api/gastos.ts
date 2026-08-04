@@ -69,5 +69,10 @@ export async function crearGasto(
 ): Promise<Resultado<null>> {
   const respuesta = await enviarEvento(credenciales, 'CREAR_GASTO', { ...gasto });
 
-  return { ok: respuesta.estado === 'ok', mensaje: respuesta.mensaje, datos: null };
+  return {
+    ok: respuesta.estado === 'ok',
+    mensaje: respuesta.mensaje,
+    codigo: respuesta.codigo,
+    datos: null,
+  };
 }

@@ -21,6 +21,8 @@ export interface Persona {
 export interface Resultado<T> {
   ok: boolean;
   mensaje: string;
+  /** `LISTA_CERRADA` cuando la lista se cerró desde otro celular. */
+  codigo?: string;
   datos: T | null;
 }
 

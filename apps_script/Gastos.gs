@@ -265,9 +265,12 @@ function ejecutarCrearGasto(datos, quien) {
   }
 
   if (lista.estado !== ESTADO_ABIERTA) {
+    // Con código y no solo con texto: la app ofrece elegir otra lista cuando
+    // pasa esto, y reconocerlo por el mensaje se rompería al reescribirlo.
     return responder({
       estado: 'error',
-      mensaje: 'La lista está cerrada: no se le pueden cargar gastos.',
+      codigo: 'LISTA_CERRADA',
+      mensaje: 'Esa lista se cerró mientras cargabas el gasto.',
     });
   }
 

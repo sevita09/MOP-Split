@@ -2,7 +2,9 @@ import { useState } from 'react';
 import type { Concepto } from '../api/conceptos';
 import { crearConcepto } from '../api/conceptos';
 import { crearGasto } from '../api/gastos';
+import type { Lista } from '../api/listas';
 import type { Credenciales } from '../api/planilla';
+import { nombreDelPeriodo } from '../utiles/meses';
 import {
   agregarComa,
   agregarDigito,
@@ -19,6 +21,8 @@ interface Props {
   /** `null` cuando se está cargando un concepto que todavía no existe. */
   concepto: Concepto | null;
   idLista: string;
+  /** Para poder ofrecer otra si la elegida se cerró desde otro celular. */
+  listasAbiertas: Lista[];
   alCargar: (idConcepto: string) => void;
   alCerrar: () => void;
 }
@@ -35,6 +39,7 @@ export function CargarGasto({
   credenciales,
   concepto,
   idLista,
+  listasAbiertas,
   alCargar,
   alCerrar,
 }: Props) {
@@ -48,6 +53,11 @@ export function CargarGasto({
   // Si el concepto se creó pero el gasto falló, se recuerda su id: al
   // reintentar hay que cargar el gasto, no crear el concepto de nuevo.
   const [idYaCreado, setIdYaCreado] = useState<string | null>(null);
+
+  // Cuando la lista se cerró mientras cargabas, se ofrecen las abiertas en vez
+  // de perder lo escrito. El monto queda intacto.
+  const [aDondeVa, setADondeVa] = useState<string>(idLista);
+  const [hayQueElegirLista, setHayQueElegirLista] = useState(false);
 
   const listo = esMontoValido(monto) && (!esNuevo || nombre.trim() !== '');
 
@@ -71,7 +81,7 @@ export function CargarGasto({
     }
 
     const resultado = await crearGasto(credenciales, {
-      idLista,
+      idLista: aDondeVa,
       idConcepto,
       monto: aNumero(monto),
     });
@@ -80,6 +90,12 @@ export function CargarGasto({
 
     if (resultado.ok) {
       alCargar(idConcepto);
+      return;
+    }
+
+    if (resultado.codigo === 'LISTA_CERRADA') {
+      setHayQueElegirLista(true);
+      setError(resultado.mensaje);
       return;
     }
 
@@ -156,6 +172,36 @@ export function CargarGasto({
         </button>
 
         {error !== '' && <p className="aviso aviso--error">✕ {error}</p>}
+
+        {hayQueElegirLista && (
+          <div className="cargar__otra-lista">
+            <span className="campo__rotulo">¿En cuál lo cargamos?</span>
+            {listasAbiertas.length === 0 ? (
+              <p className="cargar__referencia">
+                No te queda ninguna lista abierta. Creá una y volvé a cargarlo.
+              </p>
+            ) : (
+              listasAbiertas.map((otra) => (
+                <button
+                  key={otra.id}
+                  type="button"
+                  className={
+                    otra.id === aDondeVa
+                      ? 'boton boton--primario boton--ancho'
+                      : 'boton boton--secundario boton--ancho'
+                  }
+                  onClick={() => {
+                    setADondeVa(otra.id);
+                    setHayQueElegirLista(false);
+                    setError('');
+                  }}
+                >
+                  {otra.nombre} · {nombreDelPeriodo(otra.mes, otra.anio)}
+                </button>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
