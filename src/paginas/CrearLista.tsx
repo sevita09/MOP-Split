@@ -2,21 +2,21 @@ import { useState } from 'react';
 import { crearLista } from '../api/listas';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
-import { usarPersonas } from '../hooks/usarPersonas';
 import { NUMEROS_DE_MES, nombreDelMes } from '../utiles/meses';
 import './CrearLista.css';
 
 interface Props {
   credenciales: Credenciales;
   persona: Persona;
+  /** Vienen de la pantalla anterior: volver a pedirlas es un viaje de más. */
+  personas: Persona[];
   alCrear: () => void;
   alVolver: () => void;
 }
 
 const HOY = new Date();
 
-export function CrearLista({ credenciales, persona, alCrear, alVolver }: Props) {
-  const { personas } = usarPersonas(credenciales);
+export function CrearLista({ credenciales, persona, personas, alCrear, alVolver }: Props) {
   const [nombre, setNombre] = useState('');
   const [mes, setMes] = useState(HOY.getMonth() + 1);
   const [anio, setAnio] = useState(HOY.getFullYear());

@@ -103,6 +103,7 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
       <CrearLista
         credenciales={credenciales}
         persona={persona}
+        personas={personas}
         alCrear={() => {
           setCreando(false);
           void recargarListas();
