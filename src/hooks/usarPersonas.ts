@@ -12,12 +12,10 @@ import type { Credenciales } from '../api/planilla';
  */
 export function usarPersonas({ url, token }: Credenciales) {
   const [personas, setPersonas] = useState<Persona[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const [primeraCarga, setPrimeraCarga] = useState(true);
   const [error, setError] = useState('');
 
   const recargar = useCallback(async () => {
-    setCargando(true);
-
     const resultado = await obtenerPersonas({ url, token });
 
     if (resultado.ok) {
@@ -27,12 +25,12 @@ export function usarPersonas({ url, token }: Credenciales) {
       setError(resultado.mensaje);
     }
 
-    setCargando(false);
+    setPrimeraCarga(false);
   }, [url, token]);
 
   useEffect(() => {
     void recargar();
   }, [recargar]);
 
-  return { personas, cargando, error, recargar };
+  return { personas, primeraCarga, error, recargar };
 }

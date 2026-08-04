@@ -34,7 +34,7 @@ export function Historial({
   alCambiarEstado,
   alVolver,
 }: Props) {
-  const { gastos, cargando, error, recargar } = usarGastos(credenciales, lista.id);
+  const { gastos, primeraCarga: cargando, error, recargar } = usarGastos(credenciales, lista.id);
   const [corrigiendo, setCorrigiendo] = useState<{ gasto: Gasto; que: Correccion } | null>(
     null,
   );

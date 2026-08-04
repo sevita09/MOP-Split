@@ -23,7 +23,7 @@ function iniciales(nombre: string) {
 }
 
 export function Ingreso({ credenciales, alIngresar, alDesconectar }: Props) {
-  const { personas, cargando, error, recargar } = usarPersonas(credenciales);
+  const { personas, primeraCarga: cargando, error, recargar } = usarPersonas(credenciales);
   const [elegida, setElegida] = useState<Persona | null>(null);
 
   if (elegida) {
