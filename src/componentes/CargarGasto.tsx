@@ -19,7 +19,7 @@ interface Props {
   /** `null` cuando se está cargando un concepto que todavía no existe. */
   concepto: Concepto | null;
   idLista: string;
-  alCargar: () => void;
+  alCargar: (idConcepto: string) => void;
   alCerrar: () => void;
 }
 
@@ -79,7 +79,7 @@ export function CargarGasto({
     setGuardando(false);
 
     if (resultado.ok) {
-      alCargar();
+      alCargar(idConcepto);
       return;
     }
 

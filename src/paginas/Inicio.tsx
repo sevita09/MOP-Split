@@ -27,7 +27,7 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
   const sincronizacion = usarSincronizacion();
   const {
     listas,
-    cargando: cargandoListas,
+    primeraCarga: cargandoListas,
     error: errorListas,
     recargar: recargarListas,
   } = usarListas(credenciales);
@@ -53,9 +53,10 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
   // cargó en esa lista: al cambiar de lista, la grilla se reordena sola.
   const {
     conceptos,
-    cargando: cargandoConceptos,
+    primeraCarga: cargandoConceptos,
     error: errorConceptos,
     recargar: recargarConceptos,
+    marcarUsado,
   } = usarConceptos(credenciales, activa?.id ?? '');
   const { personas } = usarPersonas(credenciales);
 
@@ -191,11 +192,12 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
           credenciales={credenciales}
           concepto={cargaAbierta === 'nuevo' ? null : cargaAbierta}
           idLista={activa.id}
-          alCargar={() => {
+          alCargar={(idConcepto) => {
             setCargaAbierta(null);
             setGastosCargados((previos) => previos + 1);
-            // Un concepto nuevo tiene que aparecer en la grilla enseguida, y el
-            // orden cambia porque este acaba de ser el último usado.
+            // El botón salta al frente en el acto; la recarga confirma el orden
+            // real y trae el concepto si era nuevo.
+            marcarUsado(idConcepto);
             void recargarConceptos();
           }}
           alCerrar={() => setCargaAbierta(null)}

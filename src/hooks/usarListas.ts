@@ -14,12 +14,10 @@ const VACIAS: Listas = { abiertas: [], cerradas: [] };
  */
 export function usarListas({ url, token }: Credenciales) {
   const [listas, setListas] = useState<Listas>(VACIAS);
-  const [cargando, setCargando] = useState(true);
+  const [primeraCarga, setPrimeraCarga] = useState(true);
   const [error, setError] = useState('');
 
   const recargar = useCallback(async () => {
-    setCargando(true);
-
     const resultado = await obtenerListas({ url, token });
 
     if (resultado.ok) {
@@ -29,12 +27,12 @@ export function usarListas({ url, token }: Credenciales) {
       setError(resultado.mensaje);
     }
 
-    setCargando(false);
+    setPrimeraCarga(false);
   }, [url, token]);
 
   useEffect(() => {
     void recargar();
   }, [recargar]);
 
-  return { listas, cargando, error, recargar };
+  return { listas, primeraCarga, error, recargar };
 }

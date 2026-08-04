@@ -6,17 +6,15 @@ import type { Credenciales } from '../api/planilla';
 /** Los gastos de una lista. Ver la nota de dependencias en `usarListas`. */
 export function usarGastos({ url, token }: Credenciales, idLista: string) {
   const [gastos, setGastos] = useState<Gasto[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const [primeraCarga, setPrimeraCarga] = useState(true);
   const [error, setError] = useState('');
 
   const recargar = useCallback(async () => {
     if (idLista === '') {
       setGastos([]);
-      setCargando(false);
+      setPrimeraCarga(false);
       return;
     }
-
-    setCargando(true);
 
     const resultado = await obtenerGastos({ url, token }, idLista);
 
@@ -27,12 +25,12 @@ export function usarGastos({ url, token }: Credenciales, idLista: string) {
       setError(resultado.mensaje);
     }
 
-    setCargando(false);
+    setPrimeraCarga(false);
   }, [url, token, idLista]);
 
   useEffect(() => {
     void recargar();
   }, [recargar]);
 
-  return { gastos, cargando, error, recargar };
+  return { gastos, primeraCarga, error, recargar };
 }
