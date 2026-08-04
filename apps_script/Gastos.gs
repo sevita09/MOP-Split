@@ -49,10 +49,42 @@ function comoMomento(valor) {
     return Math.round((valor - DIAS_HASTA_1970) * MS_POR_DIA);
   }
 
+  const deTexto = comoMomentoDesdeTexto(valor);
+  if (deTexto !== null) return deTexto;
+
   const interpretada = new Date(valor);
   // `null` avisa "no se pudo": la app lo muestra como sin fecha en vez de
   // inventar una.
   return isNaN(interpretada.getTime()) ? null : interpretada.getTime();
+}
+
+/**
+ * Interpreta un texto con fecha escrita como acá: día, mes, año.
+ *
+ * Va antes que `new Date`, y no es un detalle: JavaScript lee las barras como
+ * **mes/día/año**, así que `"3/08/2026"` le da el 8 de marzo en vez del 3 de
+ * agosto. Sin esto, una celda que quedó como texto no falla —que se vería— sino
+ * que muestra un mes equivocado, que no se ve.
+ */
+function comoMomentoDesdeTexto(valor) {
+  if (typeof valor !== 'string') return null;
+
+  const partes = valor
+    .trim()
+    .match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+
+  if (!partes) return null;
+
+  const momento = new Date(
+    Number(partes[3]),
+    Number(partes[2]) - 1,
+    Number(partes[1]),
+    Number(partes[4] || 0),
+    Number(partes[5] || 0),
+    Number(partes[6] || 0),
+  );
+
+  return isNaN(momento.getTime()) ? null : momento.getTime();
 }
 
 function leerGastos() {
