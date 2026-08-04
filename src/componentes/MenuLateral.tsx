@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import type { Lista } from '../api/listas';
+import type { Credenciales } from '../api/planilla';
+import { generarCodigoFamiliar } from '../utiles/codigoFamiliar';
 import { nombreDelPeriodo } from '../utiles/meses';
 import './MenuLateral.css';
 
 interface Props {
   abierto: boolean;
+  credenciales: Credenciales;
   abiertas: Lista[];
   cerradas: Lista[];
   idActiva: string | null;
@@ -26,6 +29,7 @@ interface Props {
  */
 export function MenuLateral({
   abierto,
+  credenciales,
   abiertas,
   cerradas,
   idActiva,
@@ -39,6 +43,20 @@ export function MenuLateral({
   // Las cerradas arrancan plegadas: son historial, se consultan de vez en
   // cuando, y desplegadas empujarían las abiertas fuera de la pantalla.
   const [verCerradas, setVerCerradas] = useState(false);
+  const [copiado, setCopiado] = useState(false);
+
+  /**
+   * El código sale de las credenciales que este celular ya tiene guardadas.
+   *
+   * Antes había que desconectarse y volver a pegar la URL y la clave solo para
+   * conseguirlo, que es absurdo: el aparato ya las tiene, si no la app no
+   * andaría.
+   */
+  async function copiarCodigoFamiliar() {
+    await navigator.clipboard.writeText(generarCodigoFamiliar(credenciales));
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  }
 
   return (
     <>
@@ -112,8 +130,12 @@ export function MenuLateral({
           <button type="button" className="menu__enlace" onClick={alCrearLista}>
             ＋ Nueva lista
           </button>
-          <button type="button" className="menu__enlace menu__enlace--apagado" onClick={alSalir}>
-            Salir
+          <button
+            type="button"
+            className="menu__enlace"
+            onClick={() => void copiarCodigoFamiliar()}
+          >
+            {copiado ? '✓ Código copiado' : 'Compartir código familiar'}
           </button>
           <button
             type="button"
@@ -131,7 +153,11 @@ export function MenuLateral({
               Diagnóstico
             </button>
           )}
+          <button type="button" className="menu__enlace menu__enlace--apagado" onClick={alSalir}>
+            Salir
+          </button>
         </div>
+
       </nav>
     </>
   );
