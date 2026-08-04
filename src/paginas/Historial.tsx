@@ -4,9 +4,9 @@ import type { Gasto } from '../api/gastos';
 import type { Lista } from '../api/listas';
 import type { Persona } from '../api/personas';
 import type { Credenciales } from '../api/planilla';
-import { cambiarEstadoDeLista } from '../api/listas';
 import { usarGastos } from '../hooks/usarGastos';
 import { BalanceDeLista } from '../componentes/BalanceDeLista';
+import { EstadoDeLista } from '../componentes/EstadoDeLista';
 import { CorregirGasto } from '../componentes/CorregirGasto';
 import type { Correccion } from '../componentes/CorregirGasto';
 import { formatearNumero } from '../utiles/monto';
@@ -48,28 +48,7 @@ export function Historial({
   const [corrigiendo, setCorrigiendo] = useState<{ gasto: Gasto; que: Correccion } | null>(
     null,
   );
-  const [cambiandoEstado, setCambiandoEstado] = useState(false);
-  const [errorDeEstado, setErrorDeEstado] = useState('');
-
   const cerrada = lista.estado === 'Cerrada';
-  // Esconder el botón es comodidad: la regla de verdad la aplica la planilla.
-  const puedeCambiarEstado = esAdmin || lista.esDueño;
-
-  async function alternarEstado() {
-    setCambiandoEstado(true);
-    setErrorDeEstado('');
-
-    const resultado = await cambiarEstadoDeLista(credenciales, lista.id, !cerrada);
-
-    setCambiandoEstado(false);
-
-    if (resultado.ok) {
-      alCambiarEstado();
-      return;
-    }
-
-    setErrorDeEstado(resultado.mensaje);
-  }
 
   const porConcepto = new Map(conceptos.map((uno) => [uno.id, uno]));
   const nombrePorPersona = new Map(personas.map((una) => [una.codigo, una.nombre]));
@@ -104,21 +83,12 @@ export function Historial({
         {cargando && <p className="historial__nota">Cargando…</p>}
         {error !== '' && <p className="aviso aviso--error">✕ {error}</p>}
 
-        {puedeCambiarEstado && (
-          <div className="historial__estado">
-            <span>{cerrada ? 'El balance quedó congelado.' : 'Lista abierta.'}</span>
-            <button
-              type="button"
-              className="boton boton--secundario boton--chico"
-              disabled={cambiandoEstado}
-              onClick={() => void alternarEstado()}
-            >
-              {cambiandoEstado ? '…' : cerrada ? 'Reabrir lista' : 'Cerrar lista'}
-            </button>
-          </div>
-        )}
-
-        {errorDeEstado !== '' && <p className="aviso aviso--error">✕ {errorDeEstado}</p>}
+        <EstadoDeLista
+          credenciales={credenciales}
+          lista={lista}
+          esAdmin={esAdmin}
+          alCambiar={alCambiarEstado}
+        />
 
         {!cargando && error === '' && (
           <BalanceDeLista

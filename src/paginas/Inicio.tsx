@@ -6,11 +6,14 @@ import { usarListas } from '../hooks/usarListas';
 import { usarConceptos } from '../hooks/usarConceptos';
 import { usarSincronizacion } from '../hooks/usarSincronizacion';
 import { usarPersonas } from '../hooks/usarPersonas';
+import { usarGastos } from '../hooks/usarGastos';
 import { MenuLateral } from '../componentes/MenuLateral';
 import { GrillaDeConceptos } from '../componentes/GrillaDeConceptos';
 import { CargarGasto } from '../componentes/CargarGasto';
 import { PuntoDeSincronizacion } from '../componentes/PuntoDeSincronizacion';
 import { Aviso } from '../componentes/Aviso';
+import { BalanceDeLista } from '../componentes/BalanceDeLista';
+import { EstadoDeLista } from '../componentes/EstadoDeLista';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
 import { Historial } from './Historial';
@@ -61,6 +64,14 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
     marcarUsado,
   } = usarConceptos(credenciales, activa?.id ?? '');
   const { personas } = usarPersonas(credenciales);
+
+  const cerrada = activa?.estado === 'Cerrada';
+  // Los gastos solo se piden cuando la lista está cerrada, que es cuando hacen
+  // falta acá: en una abierta esta pantalla es para cargar, no para mirar.
+  const { gastos: gastosDeCerrada } = usarGastos(
+    credenciales,
+    cerrada && activa ? activa.id : '',
+  );
 
   if (viendoDiagnostico) {
     return (
@@ -185,10 +196,21 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
       >
         {errorListas !== '' && <p className="aviso aviso--error">✕ {errorListas}</p>}
 
-        {activa?.estado === 'Cerrada' ? (
-          <p className="aviso aviso--neutro">
-            Esta lista está cerrada: se puede mirar, pero no cargarle gastos.
-          </p>
+        {cerrada && activa ? (
+          <>
+            <EstadoDeLista
+              credenciales={credenciales}
+              lista={activa}
+              esAdmin={persona.admin}
+              alCambiar={() => void recargarListas()}
+            />
+            <BalanceDeLista
+              credenciales={credenciales}
+              lista={activa}
+              gastos={gastosDeCerrada}
+              personas={personas}
+            />
+          </>
         ) : (
           <section>
             <h2 className="inicio__rotulo">Cargar gasto</h2>
