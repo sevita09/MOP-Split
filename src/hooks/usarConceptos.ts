@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { obtenerConceptos } from '../api/conceptos';
 import type { Concepto } from '../api/conceptos';
 import type { Credenciales } from '../api/planilla';
+import { recordado, recordar } from '../utiles/cacheLocal';
 
 /**
  * El catálogo de conceptos, con sus datos de uso en la lista que se está
@@ -16,8 +17,13 @@ import type { Credenciales } from '../api/planilla';
  * por algo que ya se guardó bien.
   */
 export function usarConceptos({ url, token }: Credenciales, idLista: string) {
-  const [conceptos, setConceptos] = useState<Concepto[]>([]);
-  const [primeraCarga, setPrimeraCarga] = useState(true);
+  // El caché va con su lista adentro: el orden de los botones depende de qué
+  // se cargó en ella, así que el de otra lista no sirve.
+  const guardados = recordado<{ idLista: string; conceptos: Concepto[] }>('conceptos');
+  const sirve = guardados !== null && guardados.idLista === idLista;
+
+  const [conceptos, setConceptos] = useState<Concepto[]>(sirve ? guardados.conceptos : []);
+  const [primeraCarga, setPrimeraCarga] = useState(!sirve);
   const [error, setError] = useState('');
 
   const recargar = useCallback(async () => {
@@ -25,6 +31,7 @@ export function usarConceptos({ url, token }: Credenciales, idLista: string) {
 
     if (resultado.ok) {
       setConceptos(resultado.datos ?? []);
+      recordar('conceptos', { idLista, conceptos: resultado.datos ?? [] });
       setError('');
     } else {
       setError(resultado.mensaje);
