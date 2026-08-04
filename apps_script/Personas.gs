@@ -21,6 +21,8 @@ function obtenerHojaPersonas() {
   // El PIN puede empezar con cero. Si la columna queda como número, Sheets se
   // come ese cero y el ingreso falla sin que se entienda por qué.
   hoja.getRange('C:C').setNumberFormat('@');
+  // Y el nombre podría tomarse por una fecha, igual que en Listas.
+  hoja.getRange('B2:B').setNumberFormat('@');
 
   return hoja;
 }
