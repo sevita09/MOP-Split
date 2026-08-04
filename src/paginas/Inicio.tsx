@@ -14,6 +14,7 @@ import { PuntoDeSincronizacion } from '../componentes/PuntoDeSincronizacion';
 import { Aviso } from '../componentes/Aviso';
 import { BalanceDeLista } from '../componentes/BalanceDeLista';
 import { EstadoDeLista } from '../componentes/EstadoDeLista';
+import { ListaDeGastos } from '../componentes/ListaDeGastos';
 import { nombreDelPeriodo } from '../utiles/meses';
 import { CrearLista } from './CrearLista';
 import { Historial } from './Historial';
@@ -160,7 +161,7 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
         </div>
         {persona.admin && <span className="inicio__etiqueta">Admin</span>}
         <PuntoDeSincronizacion estado={sincronizacion} />
-        {activa && (
+        {activa && !cerrada && (
           <button
             type="button"
             className="inicio__menu"
@@ -209,6 +210,13 @@ export function Inicio({ credenciales, persona, alSalir, alDesconectar }: Props)
               lista={activa}
               gastos={gastosDeCerrada}
               personas={personas}
+            />
+            {/* Sin editar: una lista cerrada se mira, no se toca. */}
+            <ListaDeGastos
+              gastos={gastosDeCerrada}
+              conceptos={conceptos}
+              personas={personas}
+              alCorregir={null}
             />
           </>
         ) : (
