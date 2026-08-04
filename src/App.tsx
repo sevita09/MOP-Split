@@ -17,8 +17,16 @@ export function App() {
     return () => fijarAlCaerLaSesion(null);
   }, [salir]);
 
-  async function alSalir() {
-    await cerrarSesion(credenciales);
+  /**
+   * Desloguea el celular en el acto y avisa a la planilla sin esperarla.
+   *
+   * Aguardar la respuesta son casi cuatro segundos mirando una pantalla que ya
+   * podría estar cerrada. Y no hay nada que decidir con el resultado: si el
+   * aviso falla, lo peor que pasa es que quede una fila de más en `Sesiones`,
+   * que se borra a mano.
+   */
+  function alSalir() {
+    void cerrarSesion(credenciales);
     salir();
   }
 
@@ -33,6 +41,7 @@ export function App() {
     salir();
     borrar();
   }
+
 
   if (!estanCompletas) {
     return (
@@ -59,7 +68,7 @@ export function App() {
       <Inicio
         credenciales={credenciales}
         persona={sesion.persona}
-        alSalir={() => void alSalir()}
+        alSalir={alSalir}
         alDesconectar={alDesconectar}
       />
     </main>
