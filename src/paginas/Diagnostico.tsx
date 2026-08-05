@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { enviarEvento, medicionesRecientes, olvidarMediciones } from '../api/planilla';
 import type { Credenciales, Medicion } from '../api/planilla';
+import { estadoDelAlmacenamiento } from '../utiles/almacenamiento';
+import type { EstadoDelAlmacenamiento } from '../utiles/almacenamiento';
 import './Diagnostico.css';
 
 interface Props {
@@ -27,6 +29,11 @@ export function Diagnostico({ credenciales, idLista, alVolver }: Props) {
   const [mediciones, setMediciones] = useState<Medicion[]>(medicionesRecientes);
   const [comparacion, setComparacion] = useState<Comparacion | null>(null);
   const [midiendo, setMidiendo] = useState(false);
+  const [almacenamiento, setAlmacenamiento] = useState<EstadoDelAlmacenamiento | null>(null);
+
+  useEffect(() => {
+    void estadoDelAlmacenamiento().then(setAlmacenamiento);
+  }, []);
 
   async function medirArranque() {
     setMidiendo(true);
@@ -71,6 +78,52 @@ export function Diagnostico({ credenciales, idLista, alVolver }: Props) {
       </header>
 
       <div className="diagnostico__cuerpo">
+        <section>
+          <h2 className="diagnostico__rotulo">Este celular</h2>
+          <p className="diagnostico__nota">
+            Si los datos no están protegidos, el navegador puede borrarlos cuando le
+            falte espacio, y hay que volver a pegar el código familiar.
+          </p>
+          <div className="diagnostico__tabla">
+            <div className="diagnostico__fila">
+              <span>Cómo se abrió</span>
+              <span className={almacenamiento?.instalada ? 'diagnostico__bien' : 'diagnostico__mal'}>
+                {almacenamiento === null
+                  ? '…'
+                  : almacenamiento.instalada
+                    ? 'Instalada'
+                    : 'Acceso directo o pestaña'}
+              </span>
+            </div>
+            <div className="diagnostico__fila">
+              <span>Datos protegidos</span>
+              <span
+                className={
+                  almacenamiento?.protegido === true
+                    ? 'diagnostico__bien'
+                    : almacenamiento?.protegido === false
+                      ? 'diagnostico__mal'
+                      : undefined
+                }
+              >
+                {almacenamiento === null
+                  ? '…'
+                  : almacenamiento.protegido === null
+                    ? 'No se puede saber'
+                    : almacenamiento.protegido
+                      ? 'Sí'
+                      : 'No'}
+              </span>
+            </div>
+            {almacenamiento?.usadoMb !== null && almacenamiento !== null && (
+              <div className="diagnostico__fila">
+                <span>Espacio usado</span>
+                <span className="numero">{almacenamiento.usadoMb} MB</span>
+              </div>
+            )}
+          </div>
+        </section>
+
         <section>
           <h2 className="diagnostico__rotulo">Prueba del arranque</h2>
           <p className="diagnostico__nota">
