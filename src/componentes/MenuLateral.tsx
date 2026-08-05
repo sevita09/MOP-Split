@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Lista } from '../api/listas';
 import type { Credenciales } from '../api/planilla';
-import { generarCodigoFamiliar } from '../utiles/codigoFamiliar';
+import { generarEnlaceFamiliar } from '../utiles/codigoFamiliar';
 import { nombreDelPeriodo } from '../utiles/meses';
 import './MenuLateral.css';
 
@@ -51,9 +51,13 @@ export function MenuLateral({
    * Antes había que desconectarse y volver a pegar la URL y la clave solo para
    * conseguirlo, que es absurdo: el aparato ya las tiene, si no la app no
    * andaría.
+   *
+   * Se copia como enlace y no como texto suelto: quien lo recibe toca y queda
+   * conectado, sin pegar nada. Y si algún día el navegador le borra los datos,
+   * busca ese mensaje y vuelve a tocarlo.
    */
   async function copiarCodigoFamiliar() {
-    await navigator.clipboard.writeText(generarCodigoFamiliar(credenciales));
+    await navigator.clipboard.writeText(generarEnlaceFamiliar(credenciales));
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2000);
   }
@@ -135,7 +139,7 @@ export function MenuLateral({
             className="menu__enlace menu__enlace--apagado"
             onClick={() => void copiarCodigoFamiliar()}
           >
-            {copiado ? '✓ Código copiado' : 'Compartir código familiar'}
+            {copiado ? '✓ Enlace copiado' : 'Compartir enlace de conexión'}
           </button>
           <button
             type="button"

@@ -56,3 +56,30 @@ export function leerCodigoFamiliar(codigo: string): Credenciales | null {
     return null;
   }
 }
+
+/**
+ * Un enlace que conecta el celular con solo tocarlo.
+ *
+ * El código va después del `#` y no como parámetro: **el navegador no manda el
+ * fragmento al servidor**, así que GitHub Pages nunca lo ve ni queda en ningún
+ * registro. La exposición es la misma que la del código suelto, que ya viaja
+ * por mensaje igual.
+ */
+export function generarEnlaceFamiliar(credenciales: Credenciales): string {
+  const base = `${window.location.origin}${import.meta.env.BASE_URL}`;
+  return `${base}#${generarCodigoFamiliar(credenciales)}`;
+}
+
+/**
+ * Lee el código del enlace con el que se abrió la app, si vino con uno.
+ *
+ * Además limpia el `#`: si quedara puesto, el código estaría a la vista en la
+ * barra de direcciones y en el historial cada vez que se abre la app.
+ */
+export function leerCodigoDelEnlace(): Credenciales | null {
+  const credenciales = leerCodigoFamiliar(window.location.hash.slice(1));
+  if (credenciales === null) return null;
+
+  window.history.replaceState(null, '', window.location.pathname);
+  return credenciales;
+}
