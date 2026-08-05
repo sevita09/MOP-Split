@@ -88,3 +88,13 @@
 .diagnostico__acciones .boton {
   flex: 1;
 }
+
+.diagnostico__bien {
+  color: var(--positivo);
+  font-weight: 700;
+}
+
+.diagnostico__mal {
+  color: var(--advertencia);
+  font-weight: 700;
+}
