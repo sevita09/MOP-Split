@@ -54,6 +54,25 @@ describe('balance', () => {
     expect(balance.partePorCabeza).toBe(100);
   });
 
+  test('un descuento pasado baja el total y le resta a quien lo cobro', () => {
+    // P04 puso 600 y a P03 le devolvieron 200 de un mes ya cerrado. Quedan 400
+    // entre cuatro, y P03 tiene en el bolsillo 200 que son de todos.
+    const balance = calcularBalance(CON_UNIDAD, [gasto(600, 'P04'), gasto(0, 'P03', 200)]);
+
+    expect(balance.total).toBe(400);
+    expect(balance.partePorCabeza).toBe(100);
+    expect(netos(balance)).toEqual({ 'U-P01-P02': -200, P03: -300, P04: 500 });
+  });
+
+  test('una lista con solo un descuento pasado reparte la plata que volvio', () => {
+    // El caso de un total negativo: P03 cobró 200 y le debe su parte a cada uno.
+    const balance = calcularBalance(CON_UNIDAD, [gasto(0, 'P03', 200)]);
+
+    expect(balance.total).toBe(-200);
+    expect(balance.partePorCabeza).toBe(-50);
+    expect(netos(balance)).toEqual({ 'U-P01-P02': 100, P03: -150, P04: 50 });
+  });
+
   test('cien pesos entre tres da 33,33 a cada uno', () => {
     // Decisión tomada: cada parte se redondea a dos decimales y listo. La suma
     // de los netos queda a un centavo del cero y se acepta así.

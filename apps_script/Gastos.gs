@@ -8,6 +8,12 @@
  * `Descuento` arranca en cero. El valor que entra al balance es
  * `Monto − Descuento`, para poder registrar un reembolso posterior sin tocar el
  * monto original de la compra.
+ *
+ * `Monto` en cero con un `Descuento` es plata que volvió de una compra de una
+ * lista ya cerrada, que no se puede tocar. Entra al balance con la misma cuenta:
+ * da negativo, baja el total y le resta el aporte a quien la cobró. Del celular
+ * siempre llega `monto`; a qué columna va lo decide esta planilla según el
+ * concepto.
  */
 
 const HOJA_GASTOS = 'Gastos';
@@ -124,22 +130,39 @@ function ejecutarEditarGasto(datos, quien) {
     });
   }
 
+  // Se reconoce por la fila y no por el concepto: si el administrador cambia el
+  // concepto después, lo ya cargado tiene que seguir significando lo mismo. Un
+  // gasto común nunca tiene monto cero, porque no pasa la validación de abajo.
+  const esDescuentoPasado = gasto.monto === 0;
   const monto = datos.monto === undefined ? gasto.monto : Number(datos.monto);
   const descuento = datos.descuento === undefined ? gasto.descuento : Number(datos.descuento);
 
-  if (!(monto > 0)) {
-    return responder({ estado: 'error', mensaje: 'El monto tiene que ser mayor a cero.' });
-  }
+  if (esDescuentoPasado) {
+    if (monto !== 0) {
+      return responder({
+        estado: 'error',
+        mensaje: 'Esto es un descuento pasado: se corrige cambiando el descuento.',
+      });
+    }
 
-  if (!(descuento >= 0)) {
-    return responder({ estado: 'error', mensaje: 'El descuento no puede ser negativo.' });
-  }
+    if (!(descuento > 0)) {
+      return responder({ estado: 'error', mensaje: 'El descuento tiene que ser mayor a cero.' });
+    }
+  } else {
+    if (!(monto > 0)) {
+      return responder({ estado: 'error', mensaje: 'El monto tiene que ser mayor a cero.' });
+    }
 
-  if (descuento > monto) {
-    return responder({
-      estado: 'error',
-      mensaje: 'El descuento no puede ser mayor que el gasto.',
-    });
+    if (!(descuento >= 0)) {
+      return responder({ estado: 'error', mensaje: 'El descuento no puede ser negativo.' });
+    }
+
+    if (descuento > monto) {
+      return responder({
+        estado: 'error',
+        mensaje: 'El descuento no puede ser mayor que el gasto.',
+      });
+    }
   }
 
   hoja.getRange(fila, 4).setValue(monto);
@@ -228,19 +251,20 @@ function ejecutarCrearGasto(datos, quien) {
   // Si viene un nombre en vez de un identificador, el concepto se crea acá
   // mismo. Antes eran dos pedidos encadenados y el doble de espera.
   let idConcepto = String(datos.idConcepto || '').trim();
+  let concepto;
 
   if (idConcepto === '') {
-    const creado = crearOReusarConcepto(datos.conceptoNuevo, '');
-    if (creado === null) {
+    concepto = crearOReusarConcepto(datos.conceptoNuevo, '');
+    if (concepto === null) {
       return responder({ estado: 'error', mensaje: 'Falta el nombre del gasto.' });
     }
-    idConcepto = creado.id;
+    idConcepto = concepto.id;
   } else {
-    const existeElConcepto = leerConceptos().some(function (concepto) {
-      return concepto.id === idConcepto;
-    });
+    concepto = leerConceptos().filter(function (candidato) {
+      return candidato.id === idConcepto;
+    })[0];
 
-    if (!existeElConcepto) {
+    if (!concepto) {
       return responder({ estado: 'error', mensaje: 'No existe ese concepto.' });
     }
   }
@@ -250,10 +274,10 @@ function ejecutarCrearGasto(datos, quien) {
     id,
     idLista,
     idConcepto,
-    monto,
+    concepto.negativo ? 0 : monto,
     quien.codigo,
     new Date(),
-    0,
+    concepto.negativo ? monto : 0,
   ]);
 
   return responder({
