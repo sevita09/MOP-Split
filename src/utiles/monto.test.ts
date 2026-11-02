@@ -97,4 +97,17 @@ describe('monto', () => {
     expect(formatearNumero(1200.5)).toBe('$1.200,50');
     expect(formatearNumero(0)).toBe('$0,00');
   });
+
+  test('un monto negativo guardado lleva el signo antes del peso', () => {
+    // toLocaleString solo daría $-200,00, que se lee mal.
+    expect(formatearNumero(-200)).toBe('−$200,00');
+    expect(formatearNumero(-1200.5)).toBe('−$1.200,50');
+  });
+
+  test('un concepto negativo muestra el signo sin que nadie lo escriba', () => {
+    // Se ve desde antes de teclear: quien carga tiene que saber que va a restar.
+    expect(formatearParaMostrar('', true)).toBe('−$0');
+    expect(formatearParaMostrar(teclear('200'), true)).toBe('−$200');
+    expect(formatearParaMostrar(teclear('1500,50'), true)).toBe('−$1.500,50');
+  });
 });

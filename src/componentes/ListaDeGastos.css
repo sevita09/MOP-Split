@@ -45,6 +45,10 @@
   white-space: nowrap;
 }
 
+.gasto__monto--negativo {
+  color: var(--negativo);
+}
+
 .gasto__derecha {
   display: flex;
   align-items: center;

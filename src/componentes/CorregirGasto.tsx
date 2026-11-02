@@ -42,13 +42,15 @@ export function CorregirGasto({
   alCerrar,
 }: Props) {
   const esDescuento = que === 'descuento';
+  // Monto en cero: es un descuento pasado, y lo que se corrige es lo que volvió.
+  const esDescuentoPasado = gasto.monto === 0;
 
   const [monto, setMonto] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
   const valor = aNumero(monto);
-  const excedido = esDescuento && valor > gasto.monto;
+  const excedido = esDescuento && !esDescuentoPasado && valor > gasto.monto;
 
   async function confirmar() {
     setGuardando(true);
@@ -94,7 +96,9 @@ export function CorregirGasto({
         </header>
 
         <p className="cargar__referencia">
-          {esDescuento
+          {esDescuentoPasado
+            ? `Ahora dice ${formatearNumero(-gasto.descuento)}. Poné cuánto te devolvieron.`
+            : esDescuento
             ? `El gasto es de ${formatearNumero(gasto.monto)}. Poné cuánto te devolvieron.`
             : `Ahora dice ${formatearNumero(gasto.monto)}.`}
         </p>
@@ -104,7 +108,15 @@ export function CorregirGasto({
           alBorrar={() => !guardando && setMonto(borrarUltimo(monto))}
           teclaExtra={{ texto: ',', alTocar: () => !guardando && setMonto(agregarComa(monto)) }}
         >
-          <span className="cargar__monto numero">{formatearParaMostrar(monto)}</span>
+          <span
+            className={
+              esDescuentoPasado
+                ? 'cargar__monto cargar__monto--negativo numero'
+                : 'cargar__monto numero'
+            }
+          >
+            {formatearParaMostrar(monto, esDescuentoPasado)}
+          </span>
         </TecladoNumerico>
 
         <button
