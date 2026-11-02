@@ -6,6 +6,11 @@
  * administrador en la planilla, para enlazar estos gastos con otro proyecto. La
  * app nunca las escribe ni las muestra — de acá sale solo un `sinCategorizar`
  * que le sirve al admin para saber que le falta completarlas.
+ *
+ * `Negativo` en SI marca plata que vuelve en vez de plata que sale, como un
+ * reembolso de una compra de un mes ya cerrado. Sus gastos se guardan con `Monto`
+ * en cero y el importe en `Descuento`. Lo decide la planilla al guardar, así que
+ * ningún celular puede cambiarlo. Una celda en blanco vale NO.
  */
 
 const HOJA_CONCEPTOS = 'Conceptos';
@@ -16,7 +21,13 @@ const COLUMNAS_CONCEPTOS = [
   'Fijo',
   'Categoria',
   'Subcategoria',
+  'Negativo',
 ];
+
+/** Posición de `Negativo`, contando desde 1 como cuenta Sheets. */
+const COLUMNA_NEGATIVO = 7;
+
+const CONCEPTO_DESCUENTOS_PASADOS = ['Descuentos pasados', '🏷️'];
 
 /**
  * Catálogo con el que arranca una planilla nueva.
@@ -50,11 +61,51 @@ function obtenerHojaConceptos() {
         'SI',
         '',
         '',
+        'NO',
       ]);
     });
+    hoja.appendRow([
+      'C' + String(CONCEPTOS_INICIALES.length + 1).padStart(2, '0'),
+      CONCEPTO_DESCUENTOS_PASADOS[0],
+      CONCEPTO_DESCUENTOS_PASADOS[1],
+      'SI',
+      '',
+      '',
+      'SI',
+    ]);
+  } else if (hoja.getLastColumn() < COLUMNA_NEGATIVO) {
+    agregarColumnaNegativo(hoja);
   }
 
   return hoja;
+}
+
+/**
+ * Pone al día una planilla creada antes de que existiera `Negativo`.
+ *
+ * Corre una sola vez, porque después la columna ya está. Por eso, si el
+ * administrador borra el concepto más adelante, no vuelve a aparecer.
+ *
+ * Si ya había un concepto con ese nombre se lo marca en vez de crear otro, igual
+ * que en `crearOReusarConcepto`. Sus gastos ya cargados quedan como estaban.
+ */
+function agregarColumnaNegativo(hoja) {
+  // El encabezado va primero: `leerConceptos` pasa otra vez por
+  // `obtenerHojaConceptos`, y sin la columna volvería a entrar acá para siempre.
+  hoja.getRange(1, COLUMNA_NEGATIVO).setValue('Negativo');
+
+  const nombre = CONCEPTO_DESCUENTOS_PASADOS[0];
+  const filas = hoja.getDataRange().getValues();
+
+  for (let indice = 1; indice < filas.length; indice++) {
+    if (normalizarNombre(filas[indice][1]) === normalizarNombre(nombre)) {
+      hoja.getRange(indice + 1, COLUMNA_NEGATIVO).setValue('SI');
+      return;
+    }
+  }
+
+  const id = generarIdConcepto(leerConceptos());
+  hoja.appendRow([id, nombre, CONCEPTO_DESCUENTOS_PASADOS[1], 'SI', '', '', 'SI']);
 }
 
 function leerConceptos() {
@@ -73,6 +124,7 @@ function leerConceptos() {
         fijo: String(fila[3]).trim().toUpperCase() === 'SI',
         categoria: String(fila[4]).trim(),
         subcategoria: String(fila[5]).trim(),
+        negativo: String(fila[6]).trim().toUpperCase() === 'SI',
       };
     });
 }
@@ -145,13 +197,21 @@ function crearOReusarConcepto(nombreCrudo, emojiCrudo) {
       emoji: repetido.emoji,
       fijo: repetido.fijo,
       sinCategorizar: repetido.categoria === '' || repetido.subcategoria === '',
+      negativo: repetido.negativo,
     };
   }
 
   const id = generarIdConcepto(existentes);
-  obtenerHojaConceptos().appendRow([id, nombre, emoji, 'NO', '', '']);
+  obtenerHojaConceptos().appendRow([id, nombre, emoji, 'NO', '', '', 'NO']);
 
-  return { id: id, nombre: nombre, emoji: emoji, fijo: false, sinCategorizar: true };
+  return {
+    id: id,
+    nombre: nombre,
+    emoji: emoji,
+    fijo: false,
+    sinCategorizar: true,
+    negativo: false,
+  };
 }
 
 /**
@@ -190,6 +250,7 @@ function ejecutarObtenerConceptos(datos) {
       fijo: concepto.fijo,
       // Ni `Categoria` ni `Subcategoria` salen de la planilla: solo si faltan.
       sinCategorizar: concepto.categoria === '' || concepto.subcategoria === '',
+      negativo: concepto.negativo,
       usos: usos[concepto.id] || 0,
       ultimoUsoEnLista: ultimoUsoEnLista[concepto.id] || null,
     };
