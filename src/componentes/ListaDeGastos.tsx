@@ -49,6 +49,9 @@ export function ListaDeGastos({ gastos, conceptos, personas, alCorregir }: Props
 
       {gastos.map((gasto) => {
         const { emoji, nombre, quien } = describir(gasto);
+        // Monto en cero: plata que volvió de una lista ya cerrada.
+        const esDescuentoPasado = gasto.monto === 0;
+        const tieneDescuento = gasto.descuento > 0 && !esDescuentoPasado;
 
         return (
           <div key={gasto.id} className="gasto">
@@ -57,19 +60,25 @@ export function ListaDeGastos({ gastos, conceptos, personas, alCorregir }: Props
                 {emoji} {nombre}
               </span>
               <span className="gasto__meta">
-                {fechaDelGasto(gasto.fecha)} · pagó {quien}
+                {fechaDelGasto(gasto.fecha)} · {esDescuentoPasado ? 'le devolvieron a' : 'pagó'} {quien}
               </span>
             </div>
 
             <div className="gasto__derecha">
               <div className="gasto__importes">
-                {gasto.descuento > 0 && (
+                {tieneDescuento && (
                   <span className="gasto__original numero">
                     {formatearNumero(gasto.monto)}
                   </span>
                 )}
-                <span className="gasto__monto numero">
-                  {gasto.descuento > 0 && <span className="gasto__etiqueta">🏷️</span>}
+                <span
+                  className={
+                    esDescuentoPasado
+                      ? 'gasto__monto gasto__monto--negativo numero'
+                      : 'gasto__monto numero'
+                  }
+                >
+                  {tieneDescuento && <span className="gasto__etiqueta">🏷️</span>}
                   {formatearNumero(gasto.monto - gasto.descuento)}
                 </span>
               </div>
@@ -81,19 +90,22 @@ export function ListaDeGastos({ gastos, conceptos, personas, alCorregir }: Props
                     className="gasto__accion"
                     title="Corregir el monto"
                     aria-label={`Corregir el monto de ${nombre}`}
-                    onClick={() => alCorregir(gasto, 'monto')}
+                    onClick={() => alCorregir(gasto, esDescuentoPasado ? 'descuento' : 'monto')}
                   >
                     ✏️
                   </button>
-                  <button
-                    type="button"
-                    className="gasto__accion"
-                    title="Agregar un descuento"
-                    aria-label={`Agregar un descuento a ${nombre}`}
-                    onClick={() => alCorregir(gasto, 'descuento')}
-                  >
-                    🏷️
-                  </button>
+                  {/* Ya es un descuento: no lleva otro encima. */}
+                  {!esDescuentoPasado && (
+                    <button
+                      type="button"
+                      className="gasto__accion"
+                      title="Agregar un descuento"
+                      aria-label={`Agregar un descuento a ${nombre}`}
+                      onClick={() => alCorregir(gasto, 'descuento')}
+                    >
+                      🏷️
+                    </button>
+                  )}
                 </>
               )}
             </div>

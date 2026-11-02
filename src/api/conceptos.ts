@@ -15,6 +15,8 @@ export interface Concepto {
   emoji: string;
   fijo: boolean;
   sinCategorizar: boolean;
+  /** Plata que vuelve: el importe se escribe sin signo y resta. */
+  negativo: boolean;
   /** Veces que se usó, contando todas las listas. */
   usos: number;
   /** Cuándo se usó por última vez en la lista abierta, o `null` si nunca. */

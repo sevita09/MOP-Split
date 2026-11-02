@@ -20,6 +20,9 @@ const MAXIMO_ENTEROS = 9;
 
 const COMA = ',';
 
+/** El signo tipográfico, el mismo que usa el balance: el guion se ve muy chico. */
+const MENOS = '−';
+
 export function agregarDigito(actual: string, digito: string): string {
   const [enteros, decimales] = actual.split(COMA);
 
@@ -44,9 +47,17 @@ export function borrarUltimo(actual: string): string {
   return actual.slice(0, -1);
 }
 
-/** Lo que se muestra en la pantalla del teclado, ya con los puntos de miles. */
-export function formatearParaMostrar(actual: string): string {
-  if (actual === '') return '$0';
+/**
+ * Lo que se muestra en la pantalla del teclado, ya con los puntos de miles.
+ *
+ * Con `negativo` el signo aparece desde antes de tocar nada, también sobre el
+ * cero: quien carga un descuento tiene que ver que va a restar, y nunca escribe
+ * el signo a mano.
+ */
+export function formatearParaMostrar(actual: string, negativo = false): string {
+  const signo = negativo ? MENOS : '';
+
+  if (actual === '') return `${signo}$0`;
 
   const [enteros, decimales] = actual.split(COMA);
   const conPuntos = (enteros === '' ? '0' : enteros).replace(
@@ -54,15 +65,22 @@ export function formatearParaMostrar(actual: string): string {
     '.',
   );
 
-  return decimales === undefined ? `$${conPuntos}` : `$${conPuntos},${decimales}`;
+  return decimales === undefined
+    ? `${signo}$${conPuntos}`
+    : `${signo}$${conPuntos},${decimales}`;
 }
 
 /**
  * Un número ya guardado, listo para mostrar. Siempre con los dos centavos: en
  * una columna de importes, `$1.200` y `$1.200,50` desalineados se leen mal.
+ *
+ * El signo se saca aparte porque `toLocaleString` lo deja pegado al número y
+ * quedaría `$-200,00`.
  */
 export function formatearNumero(valor: number): string {
-  return `$${valor.toLocaleString('es-AR', {
+  const signo = valor < 0 ? MENOS : '';
+
+  return `${signo}$${Math.abs(valor).toLocaleString('es-AR', {
     minimumFractionDigits: DECIMALES,
     maximumFractionDigits: DECIMALES,
   })}`;

@@ -68,6 +68,10 @@
   color: var(--texto);
 }
 
+.cargar__monto--negativo {
+  color: var(--negativo);
+}
+
 .cargar__nuevo {
   display: flex;
   flex-direction: column;

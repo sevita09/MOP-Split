@@ -8,6 +8,12 @@
  * `Descuento` arranca en cero. El valor que entra al balance es
  * `Monto − Descuento`, para poder registrar un reembolso posterior sin tocar el
  * monto original de la compra.
+ *
+ * `Monto` en cero con un `Descuento` es plata que volvió de una compra de una
+ * lista ya cerrada, que no se puede tocar. Entra al balance con la misma cuenta:
+ * da negativo, baja el total y le resta el aporte a quien la cobró. Del celular
+ * siempre llega `monto`; a qué columna va lo decide esta planilla según el
+ * concepto.
  */
 
 const HOJA_GASTOS = 'Gastos';
@@ -29,62 +35,6 @@ function obtenerHojaGastos() {
   // serie, y la app termina mostrando cualquier cosa.
   hoja.getRange('F2:F').setNumberFormat('dd/MM/yyyy HH:mm');
   return hoja;
-}
-
-/**
- * Pasa a milisegundos lo que haya en la celda de fecha.
- *
- * No alcanza con mirar si es un `Date`: según cómo quedó formateada la columna,
- * la misma fecha puede volver como objeto, como texto o como el número de serie
- * de Sheets —días desde el 30/12/1899—. Antes acá había un `: 0` de red de
- * seguridad, y era peor que el problema: `0` es el 1/1/1970 UTC, que en
- * Argentina se muestra como "31 dic" y parece una fecha de verdad.
- */
-function comoMomento(valor) {
-  if (valor instanceof Date) return valor.getTime();
-
-  if (typeof valor === 'number' && valor > 0) {
-    const DIAS_HASTA_1970 = 25569;
-    const MS_POR_DIA = 86400000;
-    return Math.round((valor - DIAS_HASTA_1970) * MS_POR_DIA);
-  }
-
-  const deTexto = comoMomentoDesdeTexto(valor);
-  if (deTexto !== null) return deTexto;
-
-  const interpretada = new Date(valor);
-  // `null` avisa "no se pudo": la app lo muestra como sin fecha en vez de
-  // inventar una.
-  return isNaN(interpretada.getTime()) ? null : interpretada.getTime();
-}
-
-/**
- * Interpreta un texto con fecha escrita como acá: día, mes, año.
- *
- * Va antes que `new Date`, y no es un detalle: JavaScript lee las barras como
- * **mes/día/año**, así que `"3/08/2026"` le da el 8 de marzo en vez del 3 de
- * agosto. Sin esto, una celda que quedó como texto no falla —que se vería— sino
- * que muestra un mes equivocado, que no se ve.
- */
-function comoMomentoDesdeTexto(valor) {
-  if (typeof valor !== 'string') return null;
-
-  const partes = valor
-    .trim()
-    .match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
-
-  if (!partes) return null;
-
-  const momento = new Date(
-    Number(partes[3]),
-    Number(partes[2]) - 1,
-    Number(partes[1]),
-    Number(partes[4] || 0),
-    Number(partes[5] || 0),
-    Number(partes[6] || 0),
-  );
-
-  return isNaN(momento.getTime()) ? null : momento.getTime();
 }
 
 function leerGastos() {
@@ -180,22 +130,39 @@ function ejecutarEditarGasto(datos, quien) {
     });
   }
 
+  // Se reconoce por la fila y no por el concepto: si el administrador cambia el
+  // concepto después, lo ya cargado tiene que seguir significando lo mismo. Un
+  // gasto común nunca tiene monto cero, porque no pasa la validación de abajo.
+  const esDescuentoPasado = gasto.monto === 0;
   const monto = datos.monto === undefined ? gasto.monto : Number(datos.monto);
   const descuento = datos.descuento === undefined ? gasto.descuento : Number(datos.descuento);
 
-  if (!(monto > 0)) {
-    return responder({ estado: 'error', mensaje: 'El monto tiene que ser mayor a cero.' });
-  }
+  if (esDescuentoPasado) {
+    if (monto !== 0) {
+      return responder({
+        estado: 'error',
+        mensaje: 'Esto es un descuento pasado: se corrige cambiando el descuento.',
+      });
+    }
 
-  if (!(descuento >= 0)) {
-    return responder({ estado: 'error', mensaje: 'El descuento no puede ser negativo.' });
-  }
+    if (!(descuento > 0)) {
+      return responder({ estado: 'error', mensaje: 'El descuento tiene que ser mayor a cero.' });
+    }
+  } else {
+    if (!(monto > 0)) {
+      return responder({ estado: 'error', mensaje: 'El monto tiene que ser mayor a cero.' });
+    }
 
-  if (descuento > monto) {
-    return responder({
-      estado: 'error',
-      mensaje: 'El descuento no puede ser mayor que el gasto.',
-    });
+    if (!(descuento >= 0)) {
+      return responder({ estado: 'error', mensaje: 'El descuento no puede ser negativo.' });
+    }
+
+    if (descuento > monto) {
+      return responder({
+        estado: 'error',
+        mensaje: 'El descuento no puede ser mayor que el gasto.',
+      });
+    }
   }
 
   hoja.getRange(fila, 4).setValue(monto);
@@ -284,19 +251,20 @@ function ejecutarCrearGasto(datos, quien) {
   // Si viene un nombre en vez de un identificador, el concepto se crea acá
   // mismo. Antes eran dos pedidos encadenados y el doble de espera.
   let idConcepto = String(datos.idConcepto || '').trim();
+  let concepto;
 
   if (idConcepto === '') {
-    const creado = crearOReusarConcepto(datos.conceptoNuevo, '');
-    if (creado === null) {
+    concepto = crearOReusarConcepto(datos.conceptoNuevo, '');
+    if (concepto === null) {
       return responder({ estado: 'error', mensaje: 'Falta el nombre del gasto.' });
     }
-    idConcepto = creado.id;
+    idConcepto = concepto.id;
   } else {
-    const existeElConcepto = leerConceptos().some(function (concepto) {
-      return concepto.id === idConcepto;
-    });
+    concepto = leerConceptos().filter(function (candidato) {
+      return candidato.id === idConcepto;
+    })[0];
 
-    if (!existeElConcepto) {
+    if (!concepto) {
       return responder({ estado: 'error', mensaje: 'No existe ese concepto.' });
     }
   }
@@ -306,10 +274,10 @@ function ejecutarCrearGasto(datos, quien) {
     id,
     idLista,
     idConcepto,
-    monto,
+    concepto.negativo ? 0 : monto,
     quien.codigo,
     new Date(),
-    0,
+    concepto.negativo ? monto : 0,
   ]);
 
   return responder({

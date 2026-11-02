@@ -43,6 +43,7 @@ export function CargarGasto({
   alCerrar,
 }: Props) {
   const esNuevo = concepto === null;
+  const esNegativo = concepto?.negativo === true;
 
   const [monto, setMonto] = useState('');
   const [nombre, setNombre] = useState('');
@@ -130,12 +131,24 @@ export function CargarGasto({
           </div>
         )}
 
+        {esNegativo && (
+          <p className="cargar__referencia">
+            Poné cuánto te devolvieron. Se resta de esta lista y se reparte entre todos.
+          </p>
+        )}
+
         <TecladoNumerico
           alTocarNumero={(digito) => !guardando && setMonto(agregarDigito(monto, digito))}
           alBorrar={() => !guardando && setMonto(borrarUltimo(monto))}
           teclaExtra={{ texto: ',', alTocar: () => !guardando && setMonto(agregarComa(monto)) }}
         >
-          <span className="cargar__monto numero">{formatearParaMostrar(monto)}</span>
+          <span
+            className={
+              esNegativo ? 'cargar__monto cargar__monto--negativo numero' : 'cargar__monto numero'
+            }
+          >
+            {formatearParaMostrar(monto, esNegativo)}
+          </span>
         </TecladoNumerico>
 
         <button
@@ -144,7 +157,7 @@ export function CargarGasto({
           disabled={!listo || guardando}
           onClick={() => void confirmar()}
         >
-          {guardando ? 'Guardando…' : 'Cargar gasto'}
+          {guardando ? 'Guardando…' : esNegativo ? 'Cargar descuento' : 'Cargar gasto'}
         </button>
 
         {error !== '' && <p className="aviso aviso--error">✕ {error}</p>}
